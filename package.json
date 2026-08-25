@@ -1,0 +1,45 @@
+{
+  "name": "zarr-layer-demo",
+  "version": "1.0",
+  "description": "Experimenting with web formats for Zarr data",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "next dev --turbopack -p 3000",
+    "build": "next build",
+    "start": "next start"
+  },
+  "keywords": [
+    "carbonplan",
+    "mapping",
+    "maplibre",
+    "zarr",
+    "zarr-layer",
+    "webgl",
+    "regl"
+  ],
+  "author": "jakidxav",
+  "license": "MIT",
+  "dependencies": {
+    "@carbonplan/colormaps": "^4.0.0",
+    "@carbonplan/components": "^12.6.1",
+    "@carbonplan/icons": "^2.0.0",
+    "@carbonplan/theme": "^8.1.0",
+    "@carbonplan/zarr-layer": "^0.4.3",
+    "@emotion/react": "^11.11.4",
+    "@theme-ui/color": "^0.16.2",
+    "@theme-ui/match-media": "^0.16.2",
+    "d3": "^7.9.0",
+    "file-saver": "^2.0.5",
+    "maplibre-gl": "^5.21.1",
+    "next": ">=16.2.3",
+    "react-animate-height": "^3.2.3",
+    "theme-ui": "^0.16.2",
+    "uuid": ">=13.0.1",
+    "zustand": "^5.0.0-rc.2"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  }
+}
