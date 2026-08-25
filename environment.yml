@@ -4,26 +4,19 @@ channels:
 - anaconda
 dependencies:
 - dask
-- gcsfs
-- geopandas
-- h5netcdf
 - icechunk
 - ipython
 - ipykernel
 - jupyter
 - matplotlib
+- ndpyramid
 - notebook
 - numpy
 - pandas
 - pip
 - pre_commit
-- pyarrow
-- pyogrio
-- pyproj
 - python>=3.12
 - rasterio
-- rioxarray
-- shapely
 - virtualizarr
 - xarray
 - xproj
