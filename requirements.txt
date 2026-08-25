@@ -10,6 +10,7 @@ matplotlib
 notebook
 numpy
 pandas
+pre-commit
 pyarrow
 pyogrio
 pyproj
