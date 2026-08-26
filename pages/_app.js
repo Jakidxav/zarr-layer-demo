@@ -1,0 +1,15 @@
+import { ThemeUIProvider } from 'theme-ui';
+import '@carbonplan/components/globals.css';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import './stylesheet.css';
+import theme from '@carbonplan/theme';
+
+const App = ({ Component, pageProps }) => {
+  return (
+    <ThemeUIProvider theme={theme}>
+      <Component {...pageProps} />
+    </ThemeUIProvider>
+  );
+};
+
+export default App;
