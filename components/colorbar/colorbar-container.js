@@ -3,7 +3,6 @@ import { useBreakpointIndex } from '@theme-ui/match-media';
 import { Colorbar as ColorbarComponent } from '@carbonplan/components';
 import { useColormap, useThemedColormap } from '@carbonplan/colormaps';
 
-// import useCustomColormap from '../components/store/use-custom-colormap'
 import { useStore } from '../store/index';
 
 export default function Colorbar() {
@@ -41,7 +40,7 @@ export default function Colorbar() {
   };
 
   return (
-    <Box id="colorbar-container" sx={sx['container']}>
+    <Box id="colorbar-container" sx={sx['colorbar-container']}>
       <ColorbarComponent
         sx={sx['colorbar']}
         sxClim={{ fontSize: [1, 1, 1, 2], pt: [1] }}

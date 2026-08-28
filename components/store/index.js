@@ -15,19 +15,23 @@ export const useStore = create((set, get) => ({
   center: [-60, 20],
   setCenter: (center) => set({ center }),
 
+  rasterTypeArray: ['arrays', 'bands', 'both'],
+  rasterType: 'both',
+  setRasterType: (rasterType) => set({ rasterType }),
+  rasterTypeIndex: 2,
+  setRasterTypeIndex: (rasterTypeIndex) => set({ rasterTypeIndex }),
+
   variableArray: ['temp', 'precip'],
-  variableLabels: ['Temperature', 'Precipitation'],
+  variableLabels: ['temperature', 'precipitation'],
   variable: 'temp',
   setVariable: (variable) => set({ variable }),
-
-  variableIdx: 0,
-  setVariableIdx: (variableIdx) => set({ variableIdx }),
+  variableIndex: 0,
+  setVariableIndex: (variableIndex) => set({ variableIndex }),
 
   bandArray: ['min', 'mean', 'max'],
   bandLabels: ['Min', 'Mean', 'Max'],
   band: 'mean',
   setBand: (band) => set({ band }),
-
   bandIndex: 1,
   setBandIndex: (bandIndex) => set({ bandIndex }),
 

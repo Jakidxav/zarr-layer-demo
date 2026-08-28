@@ -6,6 +6,9 @@ import MapProvider from './map-provider';
 import Basemap from './basemap';
 import Fill from './fill';
 import Line from './line';
+import ArrayRaster from './raster-arrays';
+import BandRaster from './raster-bands';
+import ArrayAndBandRaster from './raster-arrays-and-bands';
 import Router from './router';
 import ZoomReset from './zoom-reset';
 import LayerOrder from './layer-order';
@@ -15,6 +18,7 @@ export const Map = () => {
   const { theme } = useThemeUI();
 
   const zoom = useStore((state) => state.zoom);
+  const rasterType = useStore((state) => state.rasterType);
   const variable = useStore((state) => state.variable);
   const month = useStore((state) => state.month);
   const band = useStore((state) => state.band);
@@ -29,6 +33,36 @@ export const Map = () => {
   return (
     <MapProvider>
       <Basemap />
+
+      {/* {rasterType === 'arrays' && (
+        <ArrayRaster
+          // key={`${formatter}-raster`}
+          id={'raster'}
+          formatter={'ndpyramid'}
+          // formatter={'topozarr'}
+          setRaster={setRaster}
+        />
+    )} */}
+
+      {/* {rasterType === 'bands' && (
+        <BandRaster
+          // key={`${formatter}-raster`}
+          id={'raster'}
+          formatter={'ndpyramid'}
+          // formatter={'topozarr'}
+          setRaster={setRaster}
+        />
+    )} */}
+
+      {/* {rasterType === 'both' && (
+        <ArrayAndBandRaster
+          // key={`${formatter}-raster`}
+          id={'raster'}
+          formatter={'ndpyramid'}
+          // formatter={'topozarr'}
+          setRaster={setRaster}
+        />
+    )} */}
 
       {showLakesLayer && (
         <>

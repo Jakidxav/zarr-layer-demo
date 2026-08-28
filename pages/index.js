@@ -4,9 +4,9 @@ import { useBreakpointIndex } from '@theme-ui/match-media';
 
 import { Header, Loading, Meta } from '../components/view/index';
 import { DesktopSettings, MobileSettings } from '../components/settings/index';
+import { Colorbar } from '../components/colorbar/index';
 import { Map } from '../components/map/index';
 import { About } from '../components/about/index';
-import { Colorbar } from '../components/colorbar/index';
 // import { ChartContainer, DotChart, DownloadChartButton } from '../components/charts/index';
 import { useStore } from '../components/store/index';
 
@@ -15,10 +15,12 @@ export default function Index() {
   const [colorMode, setColorMode] = useColorMode();
   const container = useRef(null);
 
+  // settings
   const showDesktopSettings = useStore((store) => store.showDesktopSettings);
+
+  // charts
   const showCharts = useStore((store) => store.showCharts);
   const setShowCharts = useStore((store) => store.setShowCharts);
-  const timePeriod = useStore((store) => store.timePeriod);
   const plotData = useStore((store) => store.plotData);
 
   useEffect(() => {
@@ -30,12 +32,6 @@ export default function Index() {
       setShowCharts(false);
     }
   }, [isWide]);
-
-  useEffect(() => {
-    if (timePeriod == 'historical') {
-      setShowCharts(false);
-    }
-  }, [timePeriod]);
 
   return (
     <>
@@ -63,7 +59,7 @@ export default function Index() {
 
           {!isWide && <MobileSettings />}
 
-          <Colorbar />
+          {!isWide && <Colorbar />}
 
           <About />
         </Box>
