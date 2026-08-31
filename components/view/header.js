@@ -21,11 +21,11 @@ export default function Header() {
   const setShowCharts = useStore((state) => state.setShowCharts);
   const setPlotData = useStore((state) => state.setPlotData);
 
-  // useEffect(() => {
-  //   if (!showCharts) {
-  //     setPlotData({});
-  //   }
-  // }, [showCharts]);
+  useEffect(() => {
+    if (!showCharts) {
+      setPlotData({});
+    }
+  }, [showCharts]);
 
   return (
     <Box as="div" id="header" sx={{ position: 'relative', bg: alpha('muted', 0.5) }}>
@@ -94,7 +94,7 @@ export default function Header() {
             },
           }}
         >
-          {isWide && (!showCharts) && (<ChartIcon />)}
+          {isWide && !showCharts && <ChartIcon />}
           {showCharts && <X />}
         </IconButton> */}
 

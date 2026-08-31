@@ -32,18 +32,10 @@ const ZoomReset = () => {
     resetButton.current.classList.add('spin');
 
     if (zoom != initialZoom && center != initialCenter) {
-      console.log(zoom);
-      console.log(center);
-      console.log();
-
       map.flyTo({
         center: initialCenter,
         zoom: initialZoom,
       });
-
-      console.log(zoom);
-      console.log(center);
-      console.log();
     }
   });
 

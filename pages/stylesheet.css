@@ -77,6 +77,10 @@ select + svg {
   display: none;
 }
 
+.settings-button:hover {
+  cursor: pointer;
+}
+
 #settings-options-mobile {
   display: grid;
   grid-template-columns: 1fr 1fr;

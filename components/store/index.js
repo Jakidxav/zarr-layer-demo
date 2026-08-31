@@ -15,11 +15,17 @@ export const useStore = create((set, get) => ({
   center: [-60, 20],
   setCenter: (center) => set({ center }),
 
-  rasterTypeArray: ['arrays', 'bands', 'both'],
-  rasterType: 'both',
-  setRasterType: (rasterType) => set({ rasterType }),
-  rasterTypeIndex: 2,
-  setRasterTypeIndex: (rasterTypeIndex) => set({ rasterTypeIndex }),
+  packageNameArray: ['ndpyramid', 'topozarr'],
+  packageName: 'ndpyramid',
+  setPackageName: (packageName) => set({ packageName }),
+  packageNameIndex: 0,
+  setPackageNameIndex: (packageNameIndex) => set({ packageNameIndex }),
+
+  rasterFormatArray: ['arrays', 'bands', 'both'],
+  rasterFormat: 'arrays',
+  setRasterFormat: (rasterFormat) => set({ rasterFormat }),
+  rasterFormatIndex: 0,
+  setRasterFormatIndex: (rasterFormatIndex) => set({ rasterFormatIndex }),
 
   variableArray: ['temp', 'precip'],
   variableLabels: ['temperature', 'precipitation'],
@@ -28,12 +34,44 @@ export const useStore = create((set, get) => ({
   variableIndex: 0,
   setVariableIndex: (variableIndex) => set({ variableIndex }),
 
-  bandArray: ['min', 'mean', 'max'],
-  bandLabels: ['Min', 'Mean', 'Max'],
-  band: 'mean',
-  setBand: (band) => set({ band }),
-  bandIndex: 1,
-  setBandIndex: (bandIndex) => set({ bandIndex }),
+  statArray: ['min', 'mean', 'max'],
+  statLabels: ['Min', 'Mean', 'Max'],
+  stat: 'mean',
+  setStat: (stat) => set({ stat }),
+  statIndex: 1,
+  setStatIndex: (statIndex) => set({ statIndex }),
+
+  // this is used for the Zarr store saved as arrays
+  arrayName: () => {
+    const { variable, stat } = get();
+
+    if (variable == 'precip') {
+      return variable;
+    } else {
+      // variable == 'temp'
+      if (stat === 'min') return 'tmin';
+      else if (stat === 'mean') return 'tavg';
+      else return 'tmax';
+    }
+  },
+
+  // this is used for the Zarr store saved as bands
+  // note: this is exactly the same method as above for `arrayName`
+  // this is separate because sometimes the array and band names are
+  // the same depending on the input data format, other times the array
+  // names are equal to the variable names and the bands equal to the stat names
+  band: () => {
+    const { variable, stat } = get();
+
+    if (variable == 'precip') {
+      return variable;
+    } else {
+      // variable == 'temp'
+      if (stat === 'min') return 'tmin';
+      else if (stat === 'mean') return 'tavg';
+      else return 'tmax';
+    }
+  },
 
   monthArray: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
   month: 1,

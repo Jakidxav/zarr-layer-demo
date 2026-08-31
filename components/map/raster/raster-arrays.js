@@ -1,39 +1,43 @@
 import { useEffect, useRef, useState } from 'react';
 import { ZarrLayer } from '@carbonplan/zarr-layer';
-import { useMap } from './map-provider';
-import { useMapView } from './use-map-view';
-import { useStore } from '../store/index';
+import { useMap } from '../map-provider';
+import { useMapView } from '../use-map-view';
+import { useStore } from '../../store/index';
 
-const ArrayRaster = ({ id, formatter, setRaster }) => {
+// this component expects input data in the format:
+// Dimensions: {'month': 12, 'y': ..., 'x': ...}
+// Coordinates:
+//   * month        (month) int64 1 2 3 4 5 6 7 8 9 10 11 12
+//   * y            (y) float64 89.92 89.75 89.58 ... -89.58 -89.75 -89.92
+//   * x            (x) float64 -179.9 -179.8 -179.6 ... 179.6 179.7 179.9
+//   * spatial_ref  int64 0
+// Data variables:
+//     tmin     (month, y, x)
+//     tavg     (month, y, x)
+//     tmax     (month, y, x)
+//     precip   (month, y, x)
+const ArrayRaster = ({ id, setRaster }) => {
   const zarrLayerRef = useRef(null);
   const removed = useRef(false);
   const { map } = useMap();
+
   const { zoom, center } = useMapView();
 
   const clim = useStore((state) => state.clim)();
   const colormap = useStore((state) => state.colormap)();
-  const rasterType = useStore((state) => state.rasterType);
+
+  const packageName = useStore((state) => state.packageName);
+  const rasterFormat = useStore((state) => state.rasterFormat);
   const variable = useStore((state) => state.variable);
-  const band = useStore((state) => state.band);
+  const stat = useStore((state) => state.stat);
   const month = useStore((state) => state.month);
 
-  const version = formatter === 'topozarr' ? 3 : 2;
-  const name = rasterType === 'both' ? 'arrays-and-bands' : rasterType;
-  const source = `https://storage.googleapis.com/zarr-layer-demo/zarr/${formatter}-v${version}-${name}.zarr`;
+  const version = packageName === 'topozarr' ? 3 : 2;
+  const name = rasterFormat === 'both' ? 'arrays-and-bands' : rasterFormat;
+  const source = `https://storage.googleapis.com/zarr-layer-demo/zarr/${packageName}-v${version}-${name}.zarr`;
 
   // possible values: ['tmin', 'tavg', 'tmax', 'precip]
-  const [arrayName, setArrayName] = useState('tavg');
-
-  useEffect(() => {
-    if (variable == 'precip') {
-      setArrayName(variable);
-    } else {
-      // variable == 'temp'
-      if (band == 'min') setArrayName('tmin');
-      else if (band == 'mean') setArrayName('tavg');
-      else setArrayName('tmax');
-    }
-  }, [variable, band]);
+  const arrayName = useStore((state) => state.arrayName)();
 
   useEffect(() => {
     if (!map) return;
@@ -53,8 +57,7 @@ const ArrayRaster = ({ id, formatter, setRaster }) => {
       variable: arrayName,
       clim: clim,
       colormap: colormap,
-      // selector: { variable: arrayName, month: month },
-      selector: { month: month },
+      selector: { variable: arrayName, month: month },
     });
 
     map.addLayer(zarrLayer);
@@ -65,7 +68,7 @@ const ArrayRaster = ({ id, formatter, setRaster }) => {
       let layerId = id;
       if (map.getLayer(layerId)) map.removeLayer(layerId);
     };
-  }, [map, arrayName]);
+  }, [map, arrayName, packageName]);
 
   useEffect(() => {
     if (!map || !zarrLayerRef.current) return;
@@ -81,6 +84,15 @@ const ArrayRaster = ({ id, formatter, setRaster }) => {
 
     layer.setSelector({ variable: arrayName, month: month });
   }, [map, arrayName]);
+
+  useEffect(() => {
+    if (!map || !zarrLayerRef.current) return;
+    let layer = zarrLayerRef.current;
+
+    // change clim and colormap without re-rendering raster
+    layer.setClim(clim);
+    layer.setColormap(colormap);
+  }, [map, clim, colormap]);
 
   return null;
 };

@@ -13,11 +13,17 @@ export default function Settings() {
   const isWide = useBreakpointIndex() > 0;
 
   // shared variables and / or bands
-  const rasterTypeArray = useStore((state) => state.rasterTypeArray);
-  const rasterType = useStore((state) => state.rasterType);
-  const setRasterType = useStore((state) => state.setRasterType);
-  const rasterTypeIndex = useStore((state) => state.rasterTypeIndex);
-  const setRasterTypeIndex = useStore((state) => state.setRasterTypeIndex);
+  const packageNameArray = useStore((state) => state.packageNameArray);
+  const packageName = useStore((state) => state.packageName);
+  const setPackageName = useStore((state) => state.setPackageName);
+  const packageNameIndex = useStore((state) => state.packageNameIndex);
+  const setPackageNameIndex = useStore((state) => state.setPackageNameIndex);
+
+  const rasterFormatArray = useStore((state) => state.rasterFormatArray);
+  const rasterFormat = useStore((state) => state.rasterFormat);
+  const setRasterFormat = useStore((state) => state.setRasterFormat);
+  const rasterFormatIndex = useStore((state) => state.rasterFormatIndex);
+  const setRasterFormatIndex = useStore((state) => state.setRasterFormatIndex);
 
   const variableArray = useStore((state) => state.variableArray);
   const variable = useStore((state) => state.variable);
@@ -26,11 +32,11 @@ export default function Settings() {
   const variableIndex = useStore((state) => state.variableIndex);
   const setVariableIndex = useStore((state) => state.setVariableIndex);
 
-  const bandArray = useStore((state) => state.bandArray);
-  const setBand = useStore((state) => state.setBand);
-  const bandLabels = useStore((state) => state.bandLabels);
-  const bandIndex = useStore((state) => state.bandIndex);
-  const setBandIndex = useStore((state) => state.setBandIndex);
+  const statArray = useStore((state) => state.statArray);
+  const setStat = useStore((state) => state.setStat);
+  const statLabels = useStore((state) => state.statLabels);
+  const statIndex = useStore((state) => state.statIndex);
+  const setStatIndex = useStore((state) => state.setStatIndex);
 
   // time slider
   const monthArray = useStore((state) => state.monthArray);
@@ -94,23 +100,17 @@ export default function Settings() {
       borderStyle: 'solid',
       borderColor: 'primary',
     },
+    'package-name-container': {
+      gridTemplateColumns: 'repeat(2, 1fr)',
+    },
     'raster-type-container': {
       gridTemplateColumns: 'repeat(3, 1fr)',
-      '&:hover > .confidence-level': {
-        cursor: 'pointer',
-      },
     },
     'variable-container': {
       gridTemplateColumns: 'repeat(2, 1fr)',
-      '&:hover > .var-selection': {
-        cursor: 'pointer',
-      },
     },
-    'band-container': {
+    'stat-container': {
       gridTemplateColumns: 'repeat(3, 1fr)',
-      '&:hover > .confidence-level': {
-        cursor: 'pointer',
-      },
     },
     'time-slider': {
       width: '100%',
@@ -129,26 +129,32 @@ export default function Settings() {
     },
   };
 
-  const handleRasterTypeChange = useCallback((event) => {
+  const handlePackageNameChange = useCallback((event) => {
     let newIndex = event.target.getAttribute('data-idx');
-    setRasterTypeIndex(newIndex);
-    setRasterType(rasterTypeArray.at(newIndex));
+    setPackageNameIndex(newIndex);
+    setPackageName(packageNameArray.at(newIndex));
+  });
+
+  const handleRasterFormatChange = useCallback((event) => {
+    let newIndex = event.target.getAttribute('data-idx');
+    setRasterFormatIndex(newIndex);
+    setRasterFormat(rasterFormatArray.at(newIndex));
   });
 
   const handleVariableChange = useCallback((event) => {
     let newIndex = event.target.getAttribute('data-idx');
     setVariableIndex(newIndex);
     setVariable(variableArray.at(newIndex));
-    setBandIndex(1);
-    setBand('mean');
+    setStatIndex(1);
+    setStat('mean');
   });
 
-  const handleBandChange = useCallback((event) => {
+  const handleStatChange = useCallback((event) => {
     let newIndex = event.target.getAttribute('data-idx');
-    setBandIndex(newIndex);
+    setStatIndex(newIndex);
 
-    let band = bandArray.at(newIndex);
-    setBand(band);
+    let stat = statArray.at(newIndex);
+    setStat(stat);
   });
 
   const generateFilterOptions = (array, callback, index, name) => {
@@ -159,7 +165,7 @@ export default function Settings() {
           key={idx}
           data-idx={idx}
           role="button"
-          className={`${name}-selection`}
+          className={'settings-button'}
           onClick={callback}
           sx={{ ...sx['button'], bg: idx == index ? alpha('secondary', 0.5) : 'background' }}
         >
@@ -171,22 +177,31 @@ export default function Settings() {
     return options;
   };
 
-  let rasterTypeOptions = generateFilterOptions(
-    rasterTypeArray,
-    handleRasterTypeChange,
-    rasterTypeIndex,
+  let packageNameOptions = generateFilterOptions(
+    packageNameArray,
+    handlePackageNameChange,
+    packageNameIndex,
+    'package-name'
+  );
+
+  let rasterFormatOptions = generateFilterOptions(
+    rasterFormatArray,
+    handleRasterFormatChange,
+    rasterFormatIndex,
     'raster-type'
   );
+
   let variableOptions = generateFilterOptions(
     variableLabels,
     handleVariableChange,
     variableIndex,
     'variable'
   );
-  let bandOptions = generateFilterOptions(bandArray, handleBandChange, bandIndex, 'band');
+
+  let statOptions = generateFilterOptions(statArray, handleStatChange, statIndex, 'stat');
 
   useEffect(() => {
-    setMonth(sliderIndex);
+    setMonth(Number(sliderIndex));
   }, [sliderIndex]);
 
   const handleMouseDown = useCallback(() => {
@@ -200,12 +215,24 @@ export default function Settings() {
   return (
     <>
       <Box sx={sx['settings-container']}>
-        {/* <Box sx={{ mt: -3 }} id="raster-type-container">
+        <Box sx={{ mt: -3 }} id="package-name-container">
+          <Box as="div" sx={sx.title} id="package-name-title">
+            Package <Info>The Python package used to process the raster data.</Info>
+          </Box>
+
+          <Box
+            as="div"
+            id={'raster-type-container'}
+            sx={{ ...sx['options-container'], ...sx['package-name-container'] }}
+          >
+            {packageNameOptions}
+          </Box>
+        </Box>
+
+        <Box id="raster-type-container">
           <Box as="div" sx={sx.title} id="raster-type-title">
             Raster format{' '}
-            <Info>
-              Input data comes with variables as arrays, bands, or a combination of both.
-            </Info>
+            <Info>Input data comes with variables as arrays, bands, or a combination of both.</Info>
           </Box>
 
           <Box
@@ -213,11 +240,11 @@ export default function Settings() {
             id={'raster-type-container'}
             sx={{ ...sx['options-container'], ...sx['raster-type-container'] }}
           >
-            {rasterTypeOptions}
+            {rasterFormatOptions}
           </Box>
-        </Box> */}
+        </Box>
 
-        <Box id="var-container" sx={{ mt: -3 }}>
+        <Box id="var-container">
           <Box as="div" sx={sx.title} id="var-title">
             Variable{' '}
             <Info>
@@ -233,18 +260,18 @@ export default function Settings() {
             {variableOptions}
           </Box>
 
-          {variable == 'temp' && rasterType.toLowerCase() == 'arrays' && (
-            <Box id="bands">
-              <Box as="div" sx={sx.title} id="band-title">
+          {variable === 'temp' && (
+            <Box id="stats">
+              <Box as="div" sx={sx.title} id="stat-title">
                 Band <Info>Select a band to view minimum, mean, or maximum temperature.</Info>
               </Box>
 
               <Box
                 as="div"
-                id={'band-container'}
-                sx={{ ...sx['options-container'], ...sx['band-container'] }}
+                id={'stat-container'}
+                sx={{ ...sx['options-container'], ...sx['stat-container'] }}
               >
-                {bandOptions}
+                {statOptions}
               </Box>
             </Box>
           )}

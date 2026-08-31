@@ -1,14 +1,19 @@
 import { useEffect } from 'react';
+import { useColorMode } from 'theme-ui';
 
 import { useMap } from './map-provider';
 import { useStore } from '../store/index';
 
 const LayerOrder = () => {
   const { map } = useMap();
+  const [colorMode, setColorMode] = useColorMode();
 
   const variable = useStore((state) => state.variable);
   const band = useStore((state) => state.band);
+  const stat = useStore((state) => state.stat);
   const month = useStore((state) => state.month);
+  const packageName = useStore((state) => state.packageName);
+  const rasterFormat = useStore((state) => state.rasterFormat);
   const showStatesLayer = useStore((state) => state.showStatesLayer);
   const showCountriesLayer = useStore((state) => state.showCountriesLayer);
   const showRegionPicker = useStore((state) => state.showRegionPicker);
@@ -20,6 +25,7 @@ const LayerOrder = () => {
 
     // find base layers - always shown
     let ocean = layers.find((layer) => layer.source == 'ocean');
+    let land = layers.find((layer) => layer.source == 'land');
     let lakesFill = layers.find((layer) => layer.source == 'lakes-fill');
     let lakes = layers.find((layer) => layer.source == 'lakes');
 
@@ -35,7 +41,7 @@ const LayerOrder = () => {
     // https://docs.mapbox.com/mapbox-gl-js/api/map/#map#movelayer
     // build the complete target order list from bottom to top
     // map.moveLayer(a, b) will put a below b
-    // map.moveLayer('raster', lakesFill.id);
+    map.moveLayer('raster', lakesFill.id);
     map.moveLayer(lakesFill.id, lakes.id);
     map.moveLayer(lakes.id, ocean.id);
     if (states) map.moveLayer(states.id, ocean.id);
@@ -43,7 +49,18 @@ const LayerOrder = () => {
     if (countries) map.moveLayer(countries.id, states.id);
     if (states && countries) map.moveLayer(states.id, countries.id);
     if (pointQuery) map.moveLayer(states.id, pointQuery.id);
-  }, [map, showCountriesLayer, showStatesLayer, month, variable, band]);
+  }, [
+    map,
+    showCountriesLayer,
+    showStatesLayer,
+    month,
+    variable,
+    band,
+    stat,
+    rasterFormat,
+    packageName,
+    colorMode,
+  ]);
 
   return null;
 };
