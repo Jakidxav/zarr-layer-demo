@@ -27,14 +27,14 @@ const ArrayRaster = ({ id, setRaster }) => {
   const colormap = useStore((state) => state.colormap)();
 
   const packageName = useStore((state) => state.packageName);
+  const version = useStore((state) => state.versionArray[state.versionIndex]);
   const rasterFormat = useStore((state) => state.rasterFormat);
   const variable = useStore((state) => state.variable);
   const stat = useStore((state) => state.stat);
   const month = useStore((state) => state.month);
 
-  const version = packageName === 'topozarr' ? 3 : 2;
   const name = rasterFormat === 'both' ? 'arrays-and-bands' : rasterFormat;
-  const source = `https://storage.googleapis.com/zarr-layer-demo/zarr/${packageName}-v${version}-${name}.zarr`;
+  const source = `https://storage.googleapis.com/zarr-layer-demo/zarr/${packageName}-${version}-${name}.zarr`;
 
   // possible values: ['tmin', 'tavg', 'tmax', 'precip]
   const arrayName = useStore((state) => state.arrayName)();
@@ -68,7 +68,7 @@ const ArrayRaster = ({ id, setRaster }) => {
       let layerId = id;
       if (map.getLayer(layerId)) map.removeLayer(layerId);
     };
-  }, [map, arrayName, packageName]);
+  }, [map, arrayName, packageName, version]);
 
   useEffect(() => {
     if (!map || !zarrLayerRef.current) return;

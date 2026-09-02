@@ -4,7 +4,8 @@ import { useBreakpointIndex } from '@theme-ui/match-media';
 
 import { Header, Loading, Meta } from '../components/view/index';
 import { DesktopSettings, MobileSettings } from '../components/settings/index';
-import { Colorbar } from '../components/colorbar/index';
+import { Colorbar, ColorbarContainer } from '../components/colorbar/index';
+import { TimeSlider, TimeSliderContainer } from '../components/settings/time-slider/index';
 import { Map } from '../components/map/index';
 import { About } from '../components/about/index';
 // import { ChartContainer, DotChart, DownloadChartButton } from '../components/charts/index';
@@ -37,7 +38,7 @@ export default function Index() {
     <>
       <Meta />
 
-      <Box as="div" id="container-grid">
+      <Box as="div" id="container-grid" sx={{ overflow: 'hidden' }}>
         <Header />
 
         <Box as="div" id="main-container" ref={container}>
@@ -59,7 +60,17 @@ export default function Index() {
 
           {!isWide && <MobileSettings />}
 
-          {!isWide && <Colorbar />}
+          {!isWide && (
+            <ColorbarContainer>
+              <Colorbar />
+            </ColorbarContainer>
+          )}
+
+          {!isWide && (
+            <TimeSliderContainer>
+              <TimeSlider />
+            </TimeSliderContainer>
+          )}
 
           <About />
         </Box>

@@ -1,23 +1,30 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { Box, Button, IconButton, Input, Select, Slider, Text } from 'theme-ui';
 import { useBreakpointIndex } from '@theme-ui/match-media';
 import { alpha } from '@theme-ui/color';
-import { Colorbar } from '@carbonplan/components';
+// import { Colorbar } from '@carbonplan/components';
 import { X } from '@carbonplan/icons';
 
-// import { Colorbar } from '../colorbar/index'
+import TimeSlider from './time-slider/time-slider';
+import { Colorbar } from '../colorbar/index';
 import { Info } from '../view/index';
 import { arrayRange, useStore } from '../store/index';
 
 export default function Settings() {
   const isWide = useBreakpointIndex() > 0;
 
-  // shared variables and / or bands
+  // settings
   const packageNameArray = useStore((state) => state.packageNameArray);
   const packageName = useStore((state) => state.packageName);
   const setPackageName = useStore((state) => state.setPackageName);
   const packageNameIndex = useStore((state) => state.packageNameIndex);
   const setPackageNameIndex = useStore((state) => state.setPackageNameIndex);
+
+  const versionArray = useStore((state) => state.versionArray);
+  const setVersionArray = useStore((state) => state.setVersionArray);
+  const versionIndex = useStore((state) => state.versionIndex);
+  const setVersionIndex = useStore((state) => state.setVersionIndex);
+  const selectVersionByIndex = useStore((s) => s.selectVersionByIndex);
 
   const rasterFormatArray = useStore((state) => state.rasterFormatArray);
   const rasterFormat = useStore((state) => state.rasterFormat);
@@ -38,22 +45,6 @@ export default function Settings() {
   const statIndex = useStore((state) => state.statIndex);
   const setStatIndex = useStore((state) => state.setStatIndex);
 
-  // time slider
-  const monthArray = useStore((state) => state.monthArray);
-  const minMonth = monthArray.at(0);
-  const maxMonth = monthArray.at(-1);
-  const month = useStore((state) => state.month);
-  const setMonth = useStore((state) => state.setMonth);
-  const [sliderIndex, setSliderIndex] = useState(month);
-  const sliding = useStore((state) => state.sliding);
-  const setSliding = useStore((state) => state.setSliding);
-
-  // colorbar
-  const colormap = useStore((state) => state.colormap)();
-  const clim = useStore((state) => state.clim)();
-  const defaultLabels = useStore((state) => state.defaultLabels);
-  const defaultUnits = useStore((state) => state.defaultUnits);
-
   const sx = {
     'settings-container': {
       width: '100%',
@@ -67,19 +58,6 @@ export default function Settings() {
       fontSize: isWide ? 2 : 1,
       letterSpacing: 'smallcaps',
       textTransform: 'uppercase',
-    },
-    subtitle: {
-      color: 'gray',
-      fontSize: isWide ? '0.9rem' : '0.75rem',
-      mt: 1,
-      mb: 1,
-    },
-    'data-description': {
-      fontSize: '0.875rem',
-      color: 'primary',
-    },
-    'data-source': {
-      mt: 2,
     },
     button: {
       alignContent: 'center',
@@ -103,6 +81,9 @@ export default function Settings() {
     'package-name-container': {
       gridTemplateColumns: 'repeat(2, 1fr)',
     },
+    'version-container': {
+      gridTemplateColumns: packageName === 'ndpyramid' ? '1fr' : 'repeat(2, 1fr)',
+    },
     'raster-type-container': {
       gridTemplateColumns: 'repeat(3, 1fr)',
     },
@@ -112,37 +93,30 @@ export default function Settings() {
     'stat-container': {
       gridTemplateColumns: 'repeat(3, 1fr)',
     },
-    'time-slider': {
-      width: '100%',
-      mt: 3,
-      mb: 3,
-    },
-    'slider-labels-container': {
-      textAlign: 'center',
-      pb: 0,
-      mb: 3,
-    },
-    colorbar: {
-      width: '100%',
-      display: 'inline-block',
-      my: 'auto',
-    },
   };
 
   const handlePackageNameChange = useCallback((event) => {
-    let newIndex = event.target.getAttribute('data-idx');
+    let newIndex = event.currentTarget.getAttribute('data-idx');
     setPackageNameIndex(newIndex);
     setPackageName(packageNameArray.at(newIndex));
   });
 
+  const handleVersionChange = useCallback(
+    (event) => {
+      let newIndex = event.currentTarget.getAttribute('data-idx');
+      selectVersionByIndex(newIndex);
+    },
+    [selectVersionByIndex]
+  );
+
   const handleRasterFormatChange = useCallback((event) => {
-    let newIndex = event.target.getAttribute('data-idx');
+    let newIndex = event.currentTarget.getAttribute('data-idx');
     setRasterFormatIndex(newIndex);
     setRasterFormat(rasterFormatArray.at(newIndex));
   });
 
   const handleVariableChange = useCallback((event) => {
-    let newIndex = event.target.getAttribute('data-idx');
+    let newIndex = event.currentTarget.getAttribute('data-idx');
     setVariableIndex(newIndex);
     setVariable(variableArray.at(newIndex));
     setStatIndex(1);
@@ -150,7 +124,7 @@ export default function Settings() {
   });
 
   const handleStatChange = useCallback((event) => {
-    let newIndex = event.target.getAttribute('data-idx');
+    let newIndex = event.currentTarget.getAttribute('data-idx');
     setStatIndex(newIndex);
 
     let stat = statArray.at(newIndex);
@@ -184,6 +158,23 @@ export default function Settings() {
     'package-name'
   );
 
+  const versionOptions = useMemo(
+    () =>
+      generateFilterOptions(
+        versionArray,
+        handleVersionChange,
+        versionIndex,
+        `${packageName}-version-options`
+      ),
+    [versionArray, versionIndex, packageName, handleVersionChange]
+  );
+
+  useEffect(() => {
+    const array = packageName === 'ndpyramid' ? ['v2'] : ['v2', 'v3'];
+    setVersionArray(array);
+    selectVersionByIndex(array.length - 1);
+  }, [packageName]);
+
   let rasterFormatOptions = generateFilterOptions(
     rasterFormatArray,
     handleRasterFormatChange,
@@ -200,18 +191,6 @@ export default function Settings() {
 
   let statOptions = generateFilterOptions(statArray, handleStatChange, statIndex, 'stat');
 
-  useEffect(() => {
-    setMonth(Number(sliderIndex));
-  }, [sliderIndex]);
-
-  const handleMouseDown = useCallback(() => {
-    setSliding(true);
-  }, [month]);
-
-  const handleMouseUp = useCallback(() => {
-    setSliding(false);
-  }, [month]);
-
   return (
     <>
       <Box sx={sx['settings-container']}>
@@ -226,6 +205,20 @@ export default function Settings() {
             sx={{ ...sx['options-container'], ...sx['package-name-container'] }}
           >
             {packageNameOptions}
+          </Box>
+        </Box>
+
+        <Box id="version-container">
+          <Box as="div" sx={sx.title} id="version-title">
+            Version <Info>Use Zarr version 2 or 3.</Info>
+          </Box>
+
+          <Box
+            as="div"
+            id={'version-container'}
+            sx={{ ...sx['options-container'], ...sx['version-container'] }}
+          >
+            {versionOptions}
           </Box>
         </Box>
 
@@ -261,7 +254,7 @@ export default function Settings() {
           </Box>
 
           {variable === 'temp' && (
-            <Box id="stats">
+            <Box id="stats" sx={{ mb: isWide ? 0 : 2 }}>
               <Box as="div" sx={sx.title} id="stat-title">
                 Band <Info>Select a band to view minimum, mean, or maximum temperature.</Info>
               </Box>
@@ -276,68 +269,10 @@ export default function Settings() {
             </Box>
           )}
 
-          <Box id="time-slider-container">
-            <Box sx={{ ...sx.title, mb: [2] }}>Month</Box>
-
-            <Slider
-              key={'time-slider'}
-              id={'time-slider'}
-              sx={sx['time-slider']}
-              value={month}
-              onChange={(e) => setSliderIndex(e.target.value)}
-              onMouseDown={handleMouseDown}
-              onMouseUp={handleMouseUp}
-              min={1}
-              max={12}
-              step={1}
-            />
-
-            <Box sx={sx['slider-labels-container']}>
-              <Box
-                sx={{
-                  display: 'inline-block',
-                  float: 'left',
-                }}
-              >
-                {minMonth}
-              </Box>
-
-              <Box
-                sx={{
-                  display: 'inline-block',
-                  float: 'center',
-                  color: sliding ? 'primary' : 'muted',
-                }}
-              >
-                {month}
-              </Box>
-
-              <Box
-                sx={{
-                  float: 'right',
-                  display: 'inline-block',
-                }}
-              >
-                {maxMonth}
-              </Box>
-            </Box>
-          </Box>
+          {isWide && <TimeSlider />}
         </Box>
 
-        {isWide && (
-          <Colorbar
-            sx={sx['colorbar']}
-            sxClim={{ fontSize: [1, 1, 1, 2], pt: [1] }}
-            width="100%"
-            colormap={colormap}
-            label={defaultLabels[variable]}
-            units={defaultUnits[variable]}
-            clim={[clim[0].toFixed(2), clim[1].toFixed(2)]}
-            horizontal
-            bottom
-            discrete
-          />
-        )}
+        {isWide && <Colorbar />}
       </Box>
     </>
   );

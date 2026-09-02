@@ -21,6 +21,12 @@ export const useStore = create((set, get) => ({
   packageNameIndex: 0,
   setPackageNameIndex: (packageNameIndex) => set({ packageNameIndex }),
 
+  versionArray: ['v2'],
+  setVersionArray: (versionArray) => set({ versionArray }),
+  versionIndex: 0,
+  setVersionIndex: (versionIndex) => set({ versionIndex }),
+  selectVersionByIndex: (index) => set({ versionIndex: Number(index) }),
+
   rasterFormatArray: ['arrays', 'bands', 'both'],
   rasterFormat: 'arrays',
   setRasterFormat: (rasterFormat) => set({ rasterFormat }),

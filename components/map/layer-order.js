@@ -8,12 +8,14 @@ const LayerOrder = () => {
   const { map } = useMap();
   const [colorMode, setColorMode] = useColorMode();
 
+  const packageName = useStore((state) => state.packageName);
+  const version = useStore((state) => state.versionArray[state.versionIndex]);
+  const rasterFormat = useStore((state) => state.rasterFormat);
   const variable = useStore((state) => state.variable);
   const band = useStore((state) => state.band);
   const stat = useStore((state) => state.stat);
   const month = useStore((state) => state.month);
-  const packageName = useStore((state) => state.packageName);
-  const rasterFormat = useStore((state) => state.rasterFormat);
+
   const showStatesLayer = useStore((state) => state.showStatesLayer);
   const showCountriesLayer = useStore((state) => state.showCountriesLayer);
   const showRegionPicker = useStore((state) => state.showRegionPicker);
@@ -59,6 +61,7 @@ const LayerOrder = () => {
     stat,
     rasterFormat,
     packageName,
+    version,
     colorMode,
   ]);
 

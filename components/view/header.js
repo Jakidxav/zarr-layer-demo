@@ -29,7 +29,17 @@ export default function Header() {
 
   return (
     <Box as="div" id="header" sx={{ position: 'relative', bg: alpha('muted', 0.5) }}>
-      <Box as="div" id="site-name-container">
+      <Box
+        as="div"
+        id="site-name-container"
+        sx={{
+          display: 'flex',
+          height: '100%',
+          justifyContent: isWide ? 'space-around' : 'flex-start',
+          justifyItems: 'center',
+          alignItems: 'center',
+        }}
+      >
         <Text id="site-name-text">zarr-layer-demo</Text>
 
         {isWide && (
