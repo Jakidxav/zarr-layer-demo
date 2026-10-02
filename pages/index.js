@@ -8,7 +8,7 @@ import { Colorbar, ColorbarContainer } from '../components/colorbar/index';
 import { TimeSlider, TimeSliderContainer } from '../components/settings/time-slider/index';
 import { Map } from '../components/map/index';
 import { About } from '../components/about/index';
-// import { ChartContainer, DotChart, DownloadChartButton } from '../components/charts/index';
+import { ChartContainer, TimeseriesChart } from '../components/charts/index';
 import { useStore } from '../components/store/index';
 
 export default function Index() {
@@ -48,15 +48,11 @@ export default function Index() {
 
           {isWide && showDesktopSettings && <DesktopSettings />}
 
-          {/* {isWide && showCharts && (
-            <>
-              <ChartContainer>
-                <DotChart />
-              </ChartContainer>
-
-              {plotData && Object.keys(plotData).length > 0 && <DownloadChartButton />}
-            </>
-          )} */}
+          {isWide && showCharts && (
+            <ChartContainer>
+              <TimeseriesChart />
+            </ChartContainer>
+          )}
 
           {!isWide && <MobileSettings />}
 

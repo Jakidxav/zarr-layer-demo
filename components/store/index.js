@@ -95,7 +95,7 @@ export const useStore = create((set, get) => ({
 
   climRanges: {
     temp: { min: -40, max: 40 },
-    precip: { min: 0.0, max: 300.0 },
+    precip: { min: 0.0, max: 400.0 },
   },
   clim: () => {
     const { climRanges, variable } = get();
@@ -111,8 +111,12 @@ export const useStore = create((set, get) => ({
   filterCoordinates: [],
   setFilterCoordinates: (filterCoordinates) => set({ filterCoordinates }),
 
+  coords: [0, 10],
+  setCoords: (coords) => set({ coords }),
+
   plotData: {},
-  setPlotData: (plotData) => set({ plotData }),
+  setPlotData: (plotData) => set({ plotData, queryStatus: 'success' }),
+  setQueryStatus: (status) => set({ queryStatus: status }),
 
   showLandLayer: true,
   setShowLandLayer: (showLandLayer) => set({ showLandLayer }),
@@ -125,6 +129,9 @@ export const useStore = create((set, get) => ({
 
   showLakesLayer: true,
   setShowLakesLayer: (showLakesLayer) => set({ showLakesLayer }),
+
+  sliderIndex: 1,
+  setSliderIndex: (sliderIndex) => set({ sliderIndex }),
 
   sliding: false,
   setSliding: (sliding) => set({ sliding }),

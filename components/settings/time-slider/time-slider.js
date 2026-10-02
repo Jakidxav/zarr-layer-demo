@@ -15,7 +15,8 @@ export default function TimeSlider() {
   const setMonth = useStore((state) => state.setMonth);
   const sliding = useStore((state) => state.sliding);
   const setSliding = useStore((state) => state.setSliding);
-  const [sliderIndex, setSliderIndex] = useState(month);
+  const sliderIndex = useStore((state) => state.sliderIndex);
+  const setSliderIndex = useStore((state) => state.setSliderIndex);
 
   useEffect(() => {
     if (packageName === 'topozarr' && !sliding) {

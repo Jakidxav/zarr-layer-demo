@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useThemeUI, Box } from 'theme-ui';
-import { useMap } from './map-provider';
+import { useMap } from '../map-provider';
 import { v4 as uuidv4 } from 'uuid';
 
-import { useStore } from '../store/index';
+import { useStore } from '../../store/index';
 
 export default function PointQuery({ id }) {
   const { theme } = useThemeUI();
@@ -15,29 +15,21 @@ export default function PointQuery({ id }) {
 
   const rasterType = useStore((state) => state.rasterType);
   const variable = useStore((state) => state.variable);
-  const variableArray = useStore((state) => state.variableArray);
   const stat = useStore((state) => state.stat);
   const statArray = useStore((state) => state.statArray);
   const band = useStore((state) => state.band)();
   const arrayName = useStore((state) => state.arrayName)();
-  // const month = useStore((state) => state.month);
   const monthArray = useStore((state) => state.monthArray);
   const raster = useStore((state) => state.raster);
 
-  const roundToNearest025 = (num) => {
-    return Math.round(num * 4) / 4;
-  };
+  const coords = useStore((state) => state.coords);
+  const setCoords = useStore((state) => state.setCoords);
+  const setQueryStatus = useStore((state) => state.setQueryStatus);
+  const setPlotData = useStore((state) => state.setPlotData);
 
   function toTwoDecimalPlaces(num) {
     return parseFloat(num).toFixed(2);
   }
-
-  const queryPoint = map.getCenter();
-  const [coords, setCoords] = useState([
-    toTwoDecimalPlaces(queryPoint['lng']),
-    toTwoDecimalPlaces(queryPoint['lat']),
-  ]);
-  const setPlotData = useStore((state) => state.setPlotData);
 
   const [coordinates, setCoordinates] = useState([
     `Longitude: ${coords[0]}`,
@@ -166,49 +158,59 @@ export default function PointQuery({ id }) {
 
   useEffect(() => {
     let rasterQuery = () => {
-      try {
-        let selector;
-        if (rasterType === 'arrays') {
-          // no bands, can only query specific arrays for all months
-          // returns:
-          // coordinates: Object { lat: (1) […], lon: (1) […], month: (12) […] }
-          // dimensions: Array(3) [ "month", "lat", "lon" ]
-          // tavg: Object { 1: (1) […], 2: (1) […], 3: (1) […], … }
-          selector = {
-            month: monthArray,
-          };
-        } else if (rasterType === 'bands') {
-          selector = {
-            // queries across all months and bands for a single variable
-            // returns:
-            // coordinates: Object { lat: (1) […], lon: (1) […], band: (4) […], … }
-            // dimensions: Array(4) [ "band", "month", "lat", … ]
-            // variable: Object { tmin: {…}, tavg: {…}, tmax: {…}, … }
-            month: monthArray,
-            variable: 'variable',
-          };
-        } else {
-          // 'both'
-          // can't query across arrays, only bands and months
-          // returns:
-          // coordinates: Object { lat: (1) […], lon: (1) […], band: (3) […], … }
-          // dimensions: Array(4) [ "band", "month", "lat", … ]
-          // temp: Object { min: {…}, mean: {…}, max: {…} }
-          selector = {
-            month: monthArray,
-            band: statArray, // ['min', 'mean', 'max']
-          };
-        }
+      const abortController = new AbortController();
+      const { signal } = abortController;
 
-        const rasterQuery = raster
-          .queryData({ type: 'Point', coordinates: coords }, selector)
-          .then((result) => {
-            console.log(result);
-            // setPlotData(result);
-          });
-      } catch (error) {
-        console.error('Error querying raster:', error);
+      setQueryStatus('loading');
+
+      let selector;
+      if (rasterType === 'arrays') {
+        // no bands, can only query specific arrays for all months
+        // returns:
+        // coordinates: Object { lat: (1) […], lon: (1) […], month: (12) […] }
+        // dimensions: Array(3) [ "month", "lat", "lon" ]
+        // tavg: Object { 1: (1) […], 2: (1) […], 3: (1) […], … }
+        selector = {
+          month: monthArray,
+        };
+      } else if (rasterType === 'bands') {
+        selector = {
+          // queries across all months and bands for a single variable
+          // returns:
+          // coordinates: Object { lat: (1) […], lon: (1) […], band: (4) […], … }
+          // dimensions: Array(4) [ "band", "month", "lat", … ]
+          // variable: Object { tmin: {…}, tavg: {…}, tmax: {…}, … }
+          band: band,
+          month: monthArray,
+          variable: 'variable',
+        };
+      } else {
+        // 'both'
+        // can't query across arrays, only bands and months
+        // returns:
+        // coordinates: Object { lat: (1) […], lon: (1) […], band: (3) […], … }
+        // dimensions: Array(4) [ "band", "month", "lat", … ]
+        // temp: Object { min: {…}, mean: {…}, max: {…} }
+        selector = {
+          month: monthArray,
+          band: statArray, // ['min', 'mean', 'max']
+        };
       }
+
+      const rasterQuery = raster
+        .queryData({ type: 'Point', coordinates: coords }, selector)
+        .then((result) => {
+          if (!signal.aborted) {
+            console.log(result);
+            setPlotData(result);
+          }
+        })
+        .catch((error) => {
+          if (error.name !== 'AbortError') {
+            setQueryStatus('error');
+            console.error('Error querying raster:', error);
+          }
+        });
     };
     setTimeout(rasterQuery, 100);
   }, [raster, coords, variable, arrayName, band, stat, rasterType]);
@@ -222,7 +224,6 @@ export default function PointQuery({ id }) {
         right: [2],
         bottom: [50],
         zIndex: 10,
-        // width: '8.75rem',
         display: coordinates ? 'block' : 'none',
         color: '#fff',
         backgroundColor: 'rgba(0, 0, 0, 0.7)',

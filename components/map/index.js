@@ -1,13 +1,11 @@
-import { Box, useThemeUI } from 'theme-ui';
-import { useState, useEffect } from 'react';
-import { Slider } from '@carbonplan/components';
+import { useThemeUI } from 'theme-ui';
 
 import MapProvider from './map-provider';
 import Basemap from './basemap';
 import Fill from './fill';
 import Line from './line';
 import { ArrayRaster, BandRaster, ArrayAndBandRaster } from './raster/index';
-import PointQuery from './point-query';
+import { PointQuery } from './query/index';
 import ZoomReset from './zoom-reset';
 import LayerOrder from './layer-order';
 import { useStore } from '../store/index';

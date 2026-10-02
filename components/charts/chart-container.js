@@ -1,7 +1,4 @@
-import { useEffect } from 'react';
 import { Box } from 'theme-ui';
-
-import { useStore } from '../store/index';
 
 export default function ChartContainer({ children }) {
   return (

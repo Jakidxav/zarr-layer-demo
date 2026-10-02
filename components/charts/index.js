@@ -1,4 +1,4 @@
 import ChartContainer from './chart-container';
-// import Timeseries from './timeseries';
+import TimeseriesChart from './timeseries';
 
-export { ChartContainer };
+export { ChartContainer, TimeseriesChart };

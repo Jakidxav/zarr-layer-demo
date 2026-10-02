@@ -83,7 +83,7 @@ export default function Header() {
           },
         }}
       >
-        {/* <IconButton
+        <IconButton
           key="charts"
           id={'charts-toggle'}
           aria-label="Show or hide charts"
@@ -106,7 +106,7 @@ export default function Header() {
         >
           {isWide && !showCharts && <ChartIcon />}
           {showCharts && <X />}
-        </IconButton> */}
+        </IconButton>
 
         <Dimmer
           sx={{ width: '2rem', height: '2rem', mt: 1 }}
