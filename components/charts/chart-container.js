@@ -1,6 +1,10 @@
-import { Box } from 'theme-ui';
+import { Box, Spinner } from 'theme-ui';
+
+import { useStore } from '../store/index';
 
 export default function ChartContainer({ children }) {
+  const queryStatus = useStore((state) => state.queryStatus);
+
   return (
     <Box
       as="div"
@@ -32,6 +36,23 @@ export default function ChartContainer({ children }) {
         }}
       >
         {children}
+
+        {queryStatus === 'loading' && (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Spinner size={35} strokeWidth={3} />
+          </Box>
+        )}
       </Box>
     </Box>
   );

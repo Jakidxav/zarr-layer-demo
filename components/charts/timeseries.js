@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useMemo } from 'react';
-import { Box, Spinner } from 'theme-ui';
+import { Box } from 'theme-ui';
 import { useThemeUI } from 'theme-ui';
 
 import * as d3 from 'd3';
@@ -15,7 +15,11 @@ function getFormattedTimeseries(plotData, variable, band, stat, rasterFormat) {
     case 'arrays':
       return plotData?.[band];
     case 'bands':
-      return plotData?.['variable']?.[stat];
+      if (variable === 'precip') {
+        return plotData?.['variable'];
+      } else {
+        return plotData?.['variable']?.[band];
+      }
     case 'both':
       return plotData?.[variable]?.[stat];
     default:
@@ -37,35 +41,31 @@ export default function TimeseriesChart() {
   const [varMin, varMax] = clim;
 
   const plotData = useStore((state) => state.plotData);
-  const queryStatus = useStore((state) => state.queryStatus);
   const sliding = useStore((state) => state.sliding);
 
   // chart layout
   const width = 310;
   const height = 270;
-  const paddingBottom = 35;
-  const paddingTop = 10;
-  const paddingLeft = 50;
-  const paddingRight = 10;
-  const extraPaddingX = 10;
-  const extraPaddingY = 10;
-  const xTickPadding = 10;
-  const yTickPadding = 10;
-  const paddingYLabel = 10;
+  const inset = 10;
+  const tickSize = 5;
+
+  const marginLeft = 55;
+  const marginRight = 20;
+  const marginTop = 15;
+  const marginBottom = 55;
+
+  const x0 = marginLeft + inset;
+  const x1 = width - marginRight - inset;
+  const y0 = marginTop + inset;
+  const y1 = height - marginBottom - inset;
 
   // x axis
   const xTicks = monthArray;
   const xDomain = [xTicks.at(0), xTicks.at(-1)];
-  const xScale = d3
-    .scaleLinear()
-    .domain(xDomain)
-    .range([paddingLeft + xTickPadding, width - paddingRight - extraPaddingX]);
+  const xScale = d3.scaleLinear().domain(xDomain).range([x0, x1]);
 
   // y axis
-  const yScale = d3
-    .scaleLinear()
-    .domain([varMin, varMax])
-    .range([height - paddingBottom - extraPaddingY - yTickPadding, paddingTop + yTickPadding]);
+  const yScale = d3.scaleLinear().domain([varMin, varMax]).range([y1, y0]);
 
   const yTicks = yScale.ticks(7);
   const yAxisLabel = variable === 'temp' ? 'Temperature (°C)' : 'Precipitation (mm)';
@@ -93,7 +93,18 @@ export default function TimeseriesChart() {
     // which many d3 methods expect.
     let timeseriesArray = monthArray.filter((d) => timeseries[d]).map((d) => [d, timeseries[d][0]]);
 
-    return timeseriesArray;
+    return (
+      <path
+        key={'line-path'}
+        id="line-path"
+        d={lineGenerator(timeseriesArray)}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    );
   }, [hasData, timeseries]);
 
   return (
@@ -111,81 +122,50 @@ export default function TimeseriesChart() {
         {/* ensures that the svg or png has a uniform background */}
         <rect width={'100%'} height={'100%'} fill={theme.rawColors.background} />
 
-        <g
-          id={'x-axis'}
-          transform={`translate(${paddingLeft}, ${height - paddingBottom - extraPaddingY})`}
-        >
+        <g id={'x-axis'} transform={`translate(0, ${y1 + inset})`}>
           {/* axis line */}
           <line
             key={`x-axis-line`}
-            x1={0}
+            x1={marginLeft}
             y1={0}
-            x2={width - paddingRight - paddingLeft}
+            x2={width - marginRight}
             y2={0}
             stroke={'currentColor'}
             fill={'none'}
           />
-        </g>
 
-        <g id={'x-axis-label'}>
-          <text
-            key={`x-label`}
-            x={(width + paddingLeft) / 2}
-            y={height - 15}
-            textAnchor={'middle'}
-            fontSize={'0.75rem'}
-            fontFamily={"'Relative Book Pro', Roboto, system-ui, sans-serif"}
-            fontWeight={'bold'}
-            stroke={'none'}
-            fill={'currentColor'}
-          >
-            {'Month'}
-          </text>
-        </g>
+          {/* x-axis tick and labels */}
+          {xTicks.map((month, idx) => (
+            <g key={`x-tick-${idx}`} className={'x-axis-tick'}>
+              <line
+                key={`x-tick-line-${idx}`}
+                x1={xScale(month)}
+                y1={0}
+                x2={xScale(month)}
+                y2={tickSize}
+                stroke={'currentColor'}
+                fill={'none'}
+              />
+              <text
+                key={`x-tick-label-${idx}`}
+                x={xScale(month)}
+                y={tickSize + 12}
+                textAnchor={'middle'}
+                fontSize={'0.625rem'}
+                fontFamily={"'Relative Book Pro', Roboto, system-ui, sans-serif"}
+                stroke={'none'}
+                fill={'currentColor'}
+              >
+                {month}
+              </text>
+            </g>
+          ))}
 
-        {xTicks.map((month, idx) => (
-          <g key={`x-tick-${idx}`} className={'x-axis-tick'}>
-            <line
-              key={`x-tick-line-${idx}`}
-              x1={xScale(month)}
-              y1={height - paddingBottom - extraPaddingY}
-              x2={xScale(month)}
-              y2={height - paddingBottom - extraPaddingY / 2}
-              stroke={'currentColor'}
-              fill={'none'}
-            />
+          <g id={'x-axis-label'}>
             <text
-              key={`x-tick-label-${idx}`}
-              x={xScale(month)}
-              y={height - paddingBottom + extraPaddingY / 2}
-              textAnchor={'middle'}
-              fontSize={'0.625rem'}
-              fontFamily={"'Relative Book Pro', Roboto, system-ui, sans-serif"}
-              stroke={'none'}
-              fill={'currentColor'}
-            >
-              {month}
-            </text>
-          </g>
-        ))}
-
-        <g id={'y-axis'} transform={`translate(${paddingLeft}, 0)`}>
-          {/* axis line */}
-          <line
-            key={`y-axis-line`}
-            x1={0}
-            y1={paddingTop}
-            x2={0}
-            y2={height - paddingBottom - extraPaddingY}
-            stroke={'currentColor'}
-          />
-
-          <g id={'y-axis-label'}>
-            <text
-              key={`y-label`}
-              x={-20}
-              y={height / 2}
-              transform={`rotate(270, ${-35}, ${height / 2})`}
+              key={`x-label`}
+              x={(x0 + x1) / 2}
+              y={tickSize + 30}
               textAnchor={'middle'}
               fontSize={'0.75rem'}
               fontFamily={"'Relative Book Pro', Roboto, system-ui, sans-serif"}
@@ -193,17 +173,30 @@ export default function TimeseriesChart() {
               stroke={'none'}
               fill={'currentColor'}
             >
-              {yAxisLabel}
+              {'Month'}
             </text>
           </g>
+        </g>
 
+        <g id={'y-axis'} transform={`translate(${marginLeft}, 0)`}>
+          {/* axis line */}
+          <line
+            key={`y-axis-line`}
+            x1={0}
+            y1={y0 - inset}
+            x2={0}
+            y2={y1 + inset}
+            stroke={'currentColor'}
+          />
+
+          {/* y-axis ticks and labels */}
           {yTicks.map((value, idx) => (
             <g key={`y-tick-${idx}`}>
               <line
                 key={`y-tick-line-${idx}`}
                 x1={0}
                 y1={yScale(value)}
-                x2={-5}
+                x2={-tickSize}
                 y2={yScale(value)}
                 stroke={'currentColor'}
                 fill={'none'}
@@ -224,22 +217,26 @@ export default function TimeseriesChart() {
               </text>
             </g>
           ))}
+
+          <g id={'y-axis-label'}>
+            <text
+              key={`y-label`}
+              x={-tickSize - 32}
+              y={(y0 + y1) / 2}
+              transform={`rotate(-90, ${-tickSize - 32}, ${(y0 + y1) / 2})`}
+              textAnchor={'middle'}
+              fontSize={'0.75rem'}
+              fontFamily={"'Relative Book Pro', Roboto, system-ui, sans-serif"}
+              fontWeight={'bold'}
+              stroke={'none'}
+              fill={'currentColor'}
+            >
+              {yAxisLabel}
+            </text>
+          </g>
         </g>
 
-        {chartData && (
-          <g key={'timeseries-data-container'} id="timeseries-data-container">
-            <path
-              key={'line-path'}
-              id="line-path"
-              d={lineGenerator(chartData)}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={1.5}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </g>
-        )}
+        {chartData}
 
         <g id="month-value-tracker">
           <line
@@ -248,8 +245,8 @@ export default function TimeseriesChart() {
             id={'month-vertical-line'}
             x1={xScale(sliderIndex)}
             x2={xScale(sliderIndex)}
-            y1={paddingTop}
-            y2={height - paddingBottom - extraPaddingY}
+            y1={y0 - inset}
+            y2={y1 + inset}
             stroke={'#808080'}
             strokeWidth={1.5}
             strokeDasharray={'4'}
@@ -275,23 +272,6 @@ export default function TimeseriesChart() {
           )}
         </g>
       </svg>
-
-      {queryStatus === 'loading' && (
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Spinner size={35} strokeWidth={3} />
-        </Box>
-      )}
     </Box>
   );
 }

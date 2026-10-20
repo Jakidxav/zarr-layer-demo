@@ -1,153 +1,168 @@
 import { useThemedColormap } from '@carbonplan/colormaps';
 import { create } from 'zustand';
 
-export const useStore = create((set, get) => ({
-  // map container state
-  initialZoom: 0,
-  zoom: 0,
-  setZoom: (zoom) => set({ zoom }),
+export const useStore = create((set, get) => {
+  const PACKAGE_NAME_ARRAY = ['ndpyramid', 'topozarr'];
 
-  minZoom: 1,
-  maxZoom: 7,
+  const VERSIONS_BY_PACKAGE = {
+    ndpyramid: [2],
+    topozarr: [2, 3],
+  };
 
-  // this is for the initial map load
-  initialCenter: [-60, 20],
-  center: [-60, 20],
-  setCenter: (center) => set({ center }),
+  return {
+    // map container state
+    initialZoom: 0,
+    zoom: 0,
+    setZoom: (zoom) => set({ zoom }),
 
-  packageNameArray: ['ndpyramid', 'topozarr'],
-  packageName: 'ndpyramid',
-  setPackageName: (packageName) => set({ packageName }),
-  packageNameIndex: 0,
-  setPackageNameIndex: (packageNameIndex) => set({ packageNameIndex }),
+    minZoom: 1,
+    maxZoom: 7,
 
-  versionArray: ['v2'],
-  setVersionArray: (versionArray) => set({ versionArray }),
-  versionIndex: 0,
-  setVersionIndex: (versionIndex) => set({ versionIndex }),
-  selectVersionByIndex: (index) => set({ versionIndex: Number(index) }),
+    // this is for the initial map load
+    initialCenter: [-60, 20],
+    center: [-60, 20],
+    setCenter: (center) => set({ center }),
 
-  rasterFormatArray: ['arrays', 'bands', 'both'],
-  rasterFormat: 'arrays',
-  setRasterFormat: (rasterFormat) => set({ rasterFormat }),
-  rasterFormatIndex: 0,
-  setRasterFormatIndex: (rasterFormatIndex) => set({ rasterFormatIndex }),
+    packageNameArray: PACKAGE_NAME_ARRAY,
+    packageName: 'ndpyramid',
+    packageNameIndex: 0,
+    setPackage: (packageName) => {
+      const packageNameIndex = PACKAGE_NAME_ARRAY.indexOf(packageName);
+      const versionArray = VERSIONS_BY_PACKAGE[packageName];
+      set(() => ({
+        packageName,
+        packageNameIndex,
+        versionArray,
+        versionIndex: versionArray.length - 1,
+      }));
+    },
 
-  variableArray: ['temp', 'precip'],
-  variableLabels: ['temperature', 'precipitation'],
-  variable: 'temp',
-  setVariable: (variable) => set({ variable }),
-  variableIndex: 0,
-  setVariableIndex: (variableIndex) => set({ variableIndex }),
+    versionArray: [2],
+    versionIndex: 0,
+    selectVersionByIndex: (index) => set({ versionIndex: Number(index) }),
 
-  statArray: ['min', 'mean', 'max'],
-  statLabels: ['Min', 'Mean', 'Max'],
-  stat: 'mean',
-  setStat: (stat) => set({ stat }),
-  statIndex: 1,
-  setStatIndex: (statIndex) => set({ statIndex }),
+    rasterFormatArray: ['arrays', 'bands', 'both'],
+    rasterFormat: 'both',
+    setRasterFormat: (rasterFormat) => set({ rasterFormat }),
+    rasterFormatIndex: 0,
+    setRasterFormatIndex: (rasterFormatIndex) => set({ rasterFormatIndex }),
 
-  // this is used for the Zarr store saved as arrays
-  arrayName: () => {
-    const { variable, stat } = get();
+    variableArray: ['temp', 'precip'],
+    variableLabels: ['temperature', 'precipitation'],
+    variable: 'temp',
+    setVariable: (variable) => set({ variable }),
+    variableIndex: 0,
+    setVariableIndex: (variableIndex) => set({ variableIndex }),
 
-    if (variable == 'precip') {
-      return variable;
-    } else {
-      // variable == 'temp'
-      if (stat === 'min') return 'tmin';
-      else if (stat === 'mean') return 'tavg';
-      else return 'tmax';
-    }
-  },
+    statArray: ['min', 'mean', 'max'],
+    statLabels: ['Min', 'Mean', 'Max'],
+    stat: 'mean',
+    setStat: (stat) => set({ stat }),
+    statIndex: 1,
+    setStatIndex: (statIndex) => set({ statIndex }),
 
-  // this is used for the Zarr store saved as bands
-  // note: this is exactly the same method as above for `arrayName`
-  // this is separate because sometimes the array and band names are
-  // the same depending on the input data format, other times the array
-  // names are equal to the variable names and the bands equal to the stat names
-  band: () => {
-    const { variable, stat } = get();
+    // this is used for the Zarr store saved as arrays
+    arrayName: () => {
+      const { variable, stat } = get();
 
-    if (variable == 'precip') {
-      return variable;
-    } else {
-      // variable == 'temp'
-      if (stat === 'min') return 'tmin';
-      else if (stat === 'mean') return 'tavg';
-      else return 'tmax';
-    }
-  },
+      if (variable == 'precip') {
+        return variable;
+      } else {
+        // variable == 'temp'
+        if (stat === 'min') return 'tmin';
+        else if (stat === 'mean') return 'tavg';
+        else return 'tmax';
+      }
+    },
 
-  monthArray: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-  month: 1,
-  setMonth: (month) => set({ month }),
+    // this is used for the Zarr store saved as bands
+    // note: this is exactly the same method as above for `arrayName`
+    // this is separate because sometimes the array and band names are
+    // the same depending on the input data format, other times the array
+    // names are equal to the variable names and the bands equal to the stat names
+    band: () => {
+      const { variable, stat } = get();
 
-  colormapName: '',
-  setColormapName: (colormapName) => set({ colormapName }),
-  colormap: () => {
-    const { variable } = get();
-    return {
-      temp: useThemedColormap('warm'),
-      precip: useThemedColormap('cool'),
-    }[variable];
-  },
+      if (variable == 'precip') {
+        return variable;
+      } else {
+        // variable == 'temp'
+        if (stat === 'min') return 'tmin';
+        else if (stat === 'mean') return 'tavg';
+        else return 'tmax';
+      }
+    },
 
-  climRanges: {
-    temp: { min: -40, max: 40 },
-    precip: { min: 0.0, max: 400.0 },
-  },
-  clim: () => {
-    const { climRanges, variable } = get();
-    return [climRanges[variable].min, climRanges[variable].max];
-  },
+    monthArray: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    month: 1,
+    setMonth: (month) => set({ month }),
 
-  raster: { current: null },
-  setRaster: (ref) => set((state) => ({ raster: ref })),
+    colormapName: '',
+    setColormapName: (colormapName) => set({ colormapName }),
+    colormap: () => {
+      const { variable } = get();
+      return {
+        temp: useThemedColormap('warm'),
+        precip: useThemedColormap('cool'),
+      }[variable];
+    },
 
-  showCharts: false,
-  setShowCharts: (showCharts) => set({ showCharts }),
+    climRanges: {
+      temp: { min: -40, max: 40 },
+      precip: { min: 0.0, max: 400.0 },
+    },
+    clim: () => {
+      const { climRanges, variable } = get();
+      return [climRanges[variable].min, climRanges[variable].max];
+    },
 
-  filterCoordinates: [],
-  setFilterCoordinates: (filterCoordinates) => set({ filterCoordinates }),
+    raster: { current: null },
+    setRaster: (ref) => set((state) => ({ raster: ref })),
 
-  coords: [0, 10],
-  setCoords: (coords) => set({ coords }),
+    showCharts: false,
+    setShowCharts: (showCharts) => set({ showCharts }),
 
-  plotData: {},
-  setPlotData: (plotData) => set({ plotData, queryStatus: 'success' }),
-  setQueryStatus: (status) => set({ queryStatus: status }),
+    filterCoordinates: [],
+    setFilterCoordinates: (filterCoordinates) => set({ filterCoordinates }),
 
-  showLandLayer: true,
-  setShowLandLayer: (showLandLayer) => set({ showLandLayer }),
+    // coords: [0, 10],
+    // setCoords: (coords) => set({ coords }),
 
-  showCountriesLayer: true,
-  setShowCountriesLayer: (showCountriesLayer) => set({ showCountriesLayer }),
+    plotData: {},
+    setPlotData: (plotData) => set({ plotData, queryStatus: 'success' }),
+    setQueryStatus: (status) => set({ queryStatus: status }),
 
-  showStatesLayer: true,
-  setShowStatesLayer: (showStatesLayer) => set({ showStatesLayer }),
+    showLandLayer: true,
+    setShowLandLayer: (showLandLayer) => set({ showLandLayer }),
 
-  showLakesLayer: true,
-  setShowLakesLayer: (showLakesLayer) => set({ showLakesLayer }),
+    showCountriesLayer: true,
+    setShowCountriesLayer: (showCountriesLayer) => set({ showCountriesLayer }),
 
-  sliderIndex: 1,
-  setSliderIndex: (sliderIndex) => set({ sliderIndex }),
+    showStatesLayer: true,
+    setShowStatesLayer: (showStatesLayer) => set({ showStatesLayer }),
 
-  sliding: false,
-  setSliding: (sliding) => set({ sliding }),
+    showLakesLayer: true,
+    setShowLakesLayer: (showLakesLayer) => set({ showLakesLayer }),
 
-  showDesktopSettings: true,
-  setShowDesktopSettings: (showDesktopSettings) => set({ showDesktopSettings }),
+    sliderIndex: 1,
+    setSliderIndex: (sliderIndex) => set({ sliderIndex }),
 
-  showMobileSettings: false,
-  setShowMobileSettings: (showMobileSettings) => set({ showMobileSettings }),
+    sliding: false,
+    setSliding: (sliding) => set({ sliding }),
 
-  showAbout: false,
-  setShowAbout: (showAbout) => set({ showAbout }),
+    showDesktopSettings: true,
+    setShowDesktopSettings: (showDesktopSettings) => set({ showDesktopSettings }),
 
-  showOverlays: false,
-  setShowOverlays: (showOverlays) => set({ showOverlays }),
+    showMobileSettings: false,
+    setShowMobileSettings: (showMobileSettings) => set({ showMobileSettings }),
 
-  defaultLabels: { temp: 'Monthly mean', precip: 'Monthly total' },
-  defaultUnits: { temp: '(°C)', precip: '(mm)' },
-}));
+    showAbout: false,
+    setShowAbout: (showAbout) => set({ showAbout }),
+
+    showOverlays: false,
+    setShowOverlays: (showOverlays) => set({ showOverlays }),
+
+    defaultLabels: { temp: 'Monthly mean', precip: 'Monthly total' },
+    defaultUnits: { temp: '(°C)', precip: '(mm)' },
+  };
+});

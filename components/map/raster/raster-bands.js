@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { ZarrLayer } from '@carbonplan/zarr-layer';
 import { useMap } from '../map-provider';
-import { useMapView } from '../use-map-view';
 import { useStore } from '../../store/index';
 
 // This component expects input data in the format:
@@ -18,20 +17,17 @@ const BandRaster = ({ id, setRaster }) => {
   const zarrLayerRef = useRef(null);
   const removed = useRef(false);
   const { map } = useMap();
-  const { zoom, center } = useMapView();
 
   const clim = useStore((state) => state.clim)();
   const colormap = useStore((state) => state.colormap)();
 
   const packageName = useStore((state) => state.packageName);
-  const version = useStore((state) => state.versionArray[state.versionIndex]);
+  const zarrVersion = useStore((state) => state.versionArray[state.versionIndex]);
   const rasterFormat = useStore((state) => state.rasterFormat);
-  const variable = useStore((state) => state.variable);
-  const stat = useStore((state) => state.stat);
   const band = useStore((state) => state.band)();
   const month = useStore((state) => state.month);
   const name = rasterFormat === 'both' ? 'arrays-and-bands' : rasterFormat;
-  const source = `https://storage.googleapis.com/zarr-layer-demo/zarr/${packageName}-${version}-${name}.zarr`;
+  const source = `https://storage.googleapis.com/zarr-layer-demo/zarr/${packageName}-v${zarrVersion}-${name}.zarr`;
 
   useEffect(() => {
     if (!map) return;
@@ -47,11 +43,11 @@ const BandRaster = ({ id, setRaster }) => {
     const zarrLayer = new ZarrLayer({
       id: id,
       source: source,
-      zarrVersion: version,
+      zarrVersion: zarrVersion,
       variable: 'variable',
       clim: clim,
       colormap: colormap,
-      selector: { variable: 'variable', band: band, month: month },
+      selector: { band: band, month: month },
     });
 
     map.addLayer(zarrLayer);
@@ -62,13 +58,13 @@ const BandRaster = ({ id, setRaster }) => {
       let layerId = id;
       if (map.getLayer(layerId)) map.removeLayer(layerId);
     };
-  }, [map, packageName, version]);
+  }, [map, packageName, zarrVersion]);
 
   useEffect(() => {
     if (!map || !zarrLayerRef.current) return;
     let layer = zarrLayerRef.current;
 
-    layer.setSelector({ variable: 'variable', band: band, month: month });
+    layer.setSelector({ band: band, month: month });
   }, [map, month]);
 
   // separating this useEffect hook out to see if we can avoid the setSelector() call
@@ -76,7 +72,7 @@ const BandRaster = ({ id, setRaster }) => {
     if (!map || !zarrLayerRef.current) return;
     let layer = zarrLayerRef.current;
 
-    layer.setSelector({ variable: 'variable', band: band, month: month });
+    layer.setSelector({ band: band, month: month });
   }, [map, band]);
 
   useEffect(() => {

@@ -1,19 +1,27 @@
 import { useEffect, useRef, useState } from 'react';
-import { useThemeUI, Box } from 'theme-ui';
+import { Box, useColorMode, useThemeUI } from 'theme-ui';
 import { useMap } from '../map-provider';
 import { v4 as uuidv4 } from 'uuid';
 
 import { useStore } from '../../store/index';
 
+const updatePaintProperty = (map, id, key, value) => {
+  if (map.getLayer(id)) {
+    map.setPaintProperty(id, key, value);
+  }
+};
+
 export default function PointQuery({ id }) {
   const { theme } = useThemeUI();
+  const [colorMode, setColorMode] = useColorMode();
   const { map } = useMap();
 
   const removed = useRef(false);
   const sourceIdRef = useRef();
   const layerIdRef = useRef();
 
-  const rasterType = useStore((state) => state.rasterType);
+  const packageName = useStore((state) => state.packageName);
+  const rasterFormat = useStore((state) => state.rasterFormat);
   const variable = useStore((state) => state.variable);
   const stat = useStore((state) => state.stat);
   const statArray = useStore((state) => state.statArray);
@@ -22,8 +30,8 @@ export default function PointQuery({ id }) {
   const monthArray = useStore((state) => state.monthArray);
   const raster = useStore((state) => state.raster);
 
-  const coords = useStore((state) => state.coords);
-  const setCoords = useStore((state) => state.setCoords);
+  // const coords = useStore((state) => state.coords);
+  // const setCoords = useStore((state) => state.setCoords);
   const setQueryStatus = useStore((state) => state.setQueryStatus);
   const setPlotData = useStore((state) => state.setPlotData);
 
@@ -31,9 +39,12 @@ export default function PointQuery({ id }) {
     return parseFloat(num).toFixed(2);
   }
 
+  const initialMapCenter = map.getCenter();
+  const initialCoords = [initialMapCenter.lng, initialMapCenter.lat];
+  const [coords, setCoords] = useState(initialCoords);
   const [coordinates, setCoordinates] = useState([
-    `Longitude: ${coords[0]}`,
-    `Latitude: ${coords[1]}`,
+    `Longitude: ${initialCoords[0]}`,
+    `Latitude: ${initialCoords[1]}`,
   ]);
 
   // https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/
@@ -44,7 +55,7 @@ export default function PointQuery({ id }) {
         type: 'Feature',
         geometry: {
           type: 'Point',
-          coordinates: coords,
+          coordinates: initialCoords,
         },
       },
     ],
@@ -101,7 +112,10 @@ export default function PointQuery({ id }) {
 
     function onUp(e) {
       const coords = e.lngLat;
-      setCoords([toTwoDecimalPlaces(coords.lng), toTwoDecimalPlaces(coords.lat)]);
+      setCoords([
+        parseFloat(toTwoDecimalPlaces(coords.lng)),
+        parseFloat(toTwoDecimalPlaces(coords.lat)),
+      ]);
 
       setCoordinates([
         `Longitude: ${toTwoDecimalPlaces(coords.lng)}`,
@@ -117,10 +131,10 @@ export default function PointQuery({ id }) {
       map.getCanvas().style.cursor = 'move';
     });
 
-    map.on('mouseleave', layerId, () => {
-      map.setPaintProperty(layerId, 'circle-color', theme.rawColors.primary);
-      map.getCanvas().style.cursor = '';
-    });
+    // map.on('mouseleave', layerId, () => {
+    //   map.setPaintProperty(layerId, 'circle-color', theme.rawColors.primary);
+    //   map.getCanvas().style.cursor = '';
+    // });
 
     map.on('mouseup', layerId, (e) => {
       e.preventDefault();
@@ -157,53 +171,75 @@ export default function PointQuery({ id }) {
   }, []);
 
   useEffect(() => {
-    let rasterQuery = () => {
-      const abortController = new AbortController();
-      const { signal } = abortController;
+    const { current: layerId } = layerIdRef;
+    if (!map || !layerId) return;
 
+    let color =
+      colorMode === 'light' && variable === 'temp'
+        ? theme.rawColors.primary
+        : colorMode === 'light' && variable === 'precip'
+          ? theme.rawColors.primary
+          : colorMode === 'dark' && variable === 'temp'
+            ? 'teal'
+            : colorMode === 'dark' && variable === 'precip'
+              ? '#B71C1C'
+              : theme.colors.primary;
+
+    updatePaintProperty(map, layerId, 'circle-color', color);
+    updatePaintProperty(map, layerId, 'circle-stroke-color', color);
+  }, [map, colorMode, variable]);
+
+  useEffect(() => {
+    if (!raster) {
+      setPlotData(null);
+      setQueryStatus('idle');
+      return;
+    }
+
+    const abortController = new AbortController();
+    const { signal } = abortController;
+
+    let selector;
+    if (rasterFormat === 'arrays') {
+      // no bands, can only query specific arrays for all months
+      // returns:
+      // coordinates: Object { lat: (1) […], lon: (1) […], month: (12) […] }
+      // dimensions: Array(3) [ "month", "lat", "lon" ]
+      // tavg: Object { 1: (1) […], 2: (1) […], 3: (1) […], … }
+      selector = {
+        month: monthArray,
+      };
+    } else if (rasterFormat === 'bands') {
+      selector = {
+        // queries across all months and bands for a single variable
+        // returns:
+        // coordinates: Object { lat: (1) […], lon: (1) […], band: (4) […], … }
+        // dimensions: Array(4) [ "band", "month", "lat", … ]
+        // variable: Object { tmin: {…}, tavg: {…}, tmax: {…}, … }
+        month: monthArray,
+        band: variable === 'temp' ? ['tmin', 'tavg', 'tmax'] : 'precip',
+      };
+    } else {
+      // 'both'
+      // can't query across arrays, only bands and months
+      // returns:
+      // coordinates: Object { lat: (1) […], lon: (1) […], band: (3) […], … }
+      // dimensions: Array(4) [ "band", "month", "lat", … ]
+      // temp: Object { min: {…}, mean: {…}, max: {…} }
+      selector = {
+        month: monthArray,
+        band: statArray, // ['min', 'mean', 'max']
+      };
+    }
+
+    const rasterQuery = raster.ready.then(() => {
+      if (signal.aborted) return;
       setQueryStatus('loading');
 
-      let selector;
-      if (rasterType === 'arrays') {
-        // no bands, can only query specific arrays for all months
-        // returns:
-        // coordinates: Object { lat: (1) […], lon: (1) […], month: (12) […] }
-        // dimensions: Array(3) [ "month", "lat", "lon" ]
-        // tavg: Object { 1: (1) […], 2: (1) […], 3: (1) […], … }
-        selector = {
-          month: monthArray,
-        };
-      } else if (rasterType === 'bands') {
-        selector = {
-          // queries across all months and bands for a single variable
-          // returns:
-          // coordinates: Object { lat: (1) […], lon: (1) […], band: (4) […], … }
-          // dimensions: Array(4) [ "band", "month", "lat", … ]
-          // variable: Object { tmin: {…}, tavg: {…}, tmax: {…}, … }
-          band: band,
-          month: monthArray,
-          variable: 'variable',
-        };
-      } else {
-        // 'both'
-        // can't query across arrays, only bands and months
-        // returns:
-        // coordinates: Object { lat: (1) […], lon: (1) […], band: (3) […], … }
-        // dimensions: Array(4) [ "band", "month", "lat", … ]
-        // temp: Object { min: {…}, mean: {…}, max: {…} }
-        selector = {
-          month: monthArray,
-          band: statArray, // ['min', 'mean', 'max']
-        };
-      }
-
-      const rasterQuery = raster
-        .queryData({ type: 'Point', coordinates: coords }, selector)
+      return raster
+        .queryData({ type: 'Point', coordinates: coords }, selector, { signal })
         .then((result) => {
-          if (!signal.aborted) {
-            console.log(result);
-            setPlotData(result);
-          }
+          setPlotData(result ?? null);
         })
         .catch((error) => {
           if (error.name !== 'AbortError') {
@@ -211,9 +247,12 @@ export default function PointQuery({ id }) {
             console.error('Error querying raster:', error);
           }
         });
+    });
+
+    return () => {
+      abortController.abort();
     };
-    setTimeout(rasterQuery, 100);
-  }, [raster, coords, variable, arrayName, band, stat, rasterType]);
+  }, [raster, coords, variable, arrayName, band, stat, rasterFormat, packageName]);
 
   return (
     <Box

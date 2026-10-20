@@ -1,14 +1,12 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
-import { Box, Button, IconButton, Input, Select, Slider, Text } from 'theme-ui';
+import { useCallback, useEffect, useMemo } from 'react';
+import { Box } from 'theme-ui';
 import { useBreakpointIndex } from '@theme-ui/match-media';
 import { alpha } from '@theme-ui/color';
-// import { Colorbar } from '@carbonplan/components';
-import { X } from '@carbonplan/icons';
 
 import TimeSlider from './time-slider/time-slider';
 import { Colorbar } from '../colorbar/index';
 import { Info } from '../view/index';
-import { arrayRange, useStore } from '../store/index';
+import { useStore } from '../store/index';
 
 export default function Settings() {
   const isWide = useBreakpointIndex() > 0;
@@ -16,18 +14,14 @@ export default function Settings() {
   // settings
   const packageNameArray = useStore((state) => state.packageNameArray);
   const packageName = useStore((state) => state.packageName);
-  const setPackageName = useStore((state) => state.setPackageName);
   const packageNameIndex = useStore((state) => state.packageNameIndex);
-  const setPackageNameIndex = useStore((state) => state.setPackageNameIndex);
+  const setPackage = useStore((state) => state.setPackage);
 
   const versionArray = useStore((state) => state.versionArray);
-  const setVersionArray = useStore((state) => state.setVersionArray);
   const versionIndex = useStore((state) => state.versionIndex);
-  const setVersionIndex = useStore((state) => state.setVersionIndex);
   const selectVersionByIndex = useStore((s) => s.selectVersionByIndex);
 
   const rasterFormatArray = useStore((state) => state.rasterFormatArray);
-  const rasterFormat = useStore((state) => state.rasterFormat);
   const setRasterFormat = useStore((state) => state.setRasterFormat);
   const rasterFormatIndex = useStore((state) => state.rasterFormatIndex);
   const setRasterFormatIndex = useStore((state) => state.setRasterFormatIndex);
@@ -41,7 +35,6 @@ export default function Settings() {
 
   const statArray = useStore((state) => state.statArray);
   const setStat = useStore((state) => state.setStat);
-  const statLabels = useStore((state) => state.statLabels);
   const statIndex = useStore((state) => state.statIndex);
   const setStatIndex = useStore((state) => state.setStatIndex);
 
@@ -95,18 +88,20 @@ export default function Settings() {
     },
   };
 
-  const handlePackageNameChange = useCallback((event) => {
-    let newIndex = event.currentTarget.getAttribute('data-idx');
-    setPackageNameIndex(newIndex);
-    setPackageName(packageNameArray.at(newIndex));
-  });
+  const handlePackageNameChange = useCallback(
+    (event) => {
+      let newIndex = event.currentTarget.getAttribute('data-idx');
+      setPackage(packageNameArray.at(newIndex));
+    },
+    [setPackage, packageNameArray]
+  );
 
   const handleVersionChange = useCallback(
     (event) => {
       let newIndex = event.currentTarget.getAttribute('data-idx');
       selectVersionByIndex(newIndex);
     },
-    [selectVersionByIndex]
+    [selectVersionByIndex, versionArray]
   );
 
   const handleRasterFormatChange = useCallback((event) => {
@@ -169,12 +164,6 @@ export default function Settings() {
     [versionArray, versionIndex, packageName, handleVersionChange]
   );
 
-  useEffect(() => {
-    const array = packageName === 'ndpyramid' ? ['v2'] : ['v2', 'v3'];
-    setVersionArray(array);
-    selectVersionByIndex(array.length - 1);
-  }, [packageName]);
-
   let rasterFormatOptions = generateFilterOptions(
     rasterFormatArray,
     handleRasterFormatChange,
@@ -210,7 +199,8 @@ export default function Settings() {
 
         <Box id="version-container">
           <Box as="div" sx={sx.title} id="version-title">
-            Version <Info>Use Zarr version 2 or 3.</Info>
+            Zarr version
+            <Info>Use Zarr v2 with consolidated metadata or v3 with unconsolidated metadata.</Info>
           </Box>
 
           <Box
