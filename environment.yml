@@ -17,6 +17,7 @@ dependencies:
 - pre_commit
 - python>=3.12
 - rasterio
+- tqdm
 - virtualizarr
 - xarray
 - xproj

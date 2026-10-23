@@ -6,7 +6,8 @@ export const useStore = create((set, get) => {
 
   const VERSIONS_BY_PACKAGE = {
     ndpyramid: [2],
-    topozarr: [2, 3],
+    // topozarr: [2, 3],
+    topozarr: [3],
   };
 
   return {

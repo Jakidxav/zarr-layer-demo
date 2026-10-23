@@ -10,8 +10,9 @@ numpy
 pandas
 pre-commit
 rasterio
+tqdm
+topozarr
 virtualizarr
 xarray
 xproj
 zarr
-topozarr

@@ -54,15 +54,15 @@ button[role='checkbox'] {
 } */
 
 #settings-container-desktop {
-  /* height: 20rem; */
+  height: fit-content;
+  max-height: calc(100vh - 1rem);
   width: 18.75rem;
   border-radius: 0.5rem;
   z-index: 20;
   position: absolute;
   left: 0.5rem;
   top: 0.5rem;
-  bottom: 0.5rem;
-  /* overflow-y: hidden; */
+  /* bottom: 0.5rem; */
   overflow-y: auto;
 }
 

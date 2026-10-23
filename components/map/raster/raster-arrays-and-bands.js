@@ -28,9 +28,7 @@ const ArrayAndBandRaster = ({ id, setRaster }) => {
   const variable = useStore((state) => state.variable);
   const stat = useStore((state) => state.stat);
   const month = useStore((state) => state.month);
-
-  const name = rasterFormat === 'both' ? 'arrays-and-bands' : rasterFormat;
-  const source = `https://storage.googleapis.com/zarr-layer-demo/zarr/${packageName}-v${zarrVersion}-${name}.zarr`;
+  const source = `https://storage.googleapis.com/zarr-layer-demo/zarr/${packageName}-v${zarrVersion}-${rasterFormat}.zarr`;
 
   useEffect(() => {
     if (!map) return;
@@ -68,15 +66,7 @@ const ArrayAndBandRaster = ({ id, setRaster }) => {
     let layer = zarrLayerRef.current;
 
     layer.setSelector({ band: stat, month: month });
-  }, [map, month]);
-
-  // separating this useEffect hook out to see if we can avoid the setSelector() call
-  useEffect(() => {
-    if (!map || !zarrLayerRef.current) return;
-    let layer = zarrLayerRef.current;
-
-    layer.setSelector({ band: stat, month: month });
-  }, [map, variable, stat]);
+  }, [map, variable, month, stat]);
 
   useEffect(() => {
     if (!map || !zarrLayerRef.current) return;

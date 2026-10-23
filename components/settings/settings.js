@@ -75,7 +75,8 @@ export default function Settings() {
       gridTemplateColumns: 'repeat(2, 1fr)',
     },
     'version-container': {
-      gridTemplateColumns: packageName === 'ndpyramid' ? '1fr' : 'repeat(2, 1fr)',
+      // gridTemplateColumns: packageName === 'ndpyramid' ? '1fr' : 'repeat(2, 1fr)',
+      gridTemplateColumns: '1fr',
     },
     'raster-type-container': {
       gridTemplateColumns: 'repeat(3, 1fr)',
