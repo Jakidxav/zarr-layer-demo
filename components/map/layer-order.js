@@ -10,6 +10,7 @@ const LayerOrder = () => {
 
   const packageName = useStore((state) => state.packageName);
   const version = useStore((state) => state.versionArray[state.versionIndex]);
+  const zarrFormat = useStore((state) => state.zarrFormat);
   const rasterFormat = useStore((state) => state.rasterFormat);
   const variable = useStore((state) => state.variable);
   const band = useStore((state) => state.band);
@@ -59,9 +60,10 @@ const LayerOrder = () => {
     variable,
     band,
     stat,
-    rasterFormat,
     packageName,
     version,
+    zarrFormat,
+    rasterFormat,
     colorMode,
   ]);
 

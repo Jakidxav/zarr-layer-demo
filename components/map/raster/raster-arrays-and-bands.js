@@ -24,11 +24,14 @@ const ArrayAndBandRaster = ({ id, setRaster }) => {
 
   const packageName = useStore((state) => state.packageName);
   const zarrVersion = useStore((state) => state.versionArray[state.versionIndex]);
+  const zarrFormat = useStore((state) => state.zarrFormat);
   const rasterFormat = useStore((state) => state.rasterFormat);
   const variable = useStore((state) => state.variable);
   const stat = useStore((state) => state.stat);
   const month = useStore((state) => state.month);
-  const source = `https://storage.googleapis.com/zarr-layer-demo/zarr/${packageName}-v${zarrVersion}-${rasterFormat}.zarr`;
+  const source = `https://storage.googleapis.com/zarr-layer-demo/zarr/${packageName}-v${zarrVersion}-${rasterFormat}${
+    packageName === 'ndpyramid' || zarrFormat === 'flat' ? '' : '-pyramid'
+  }.zarr`;
 
   useEffect(() => {
     if (!map) return;
@@ -59,7 +62,7 @@ const ArrayAndBandRaster = ({ id, setRaster }) => {
       let layerId = id;
       if (map.getLayer(layerId)) map.removeLayer(layerId);
     };
-  }, [map, variable, packageName, zarrVersion]);
+  }, [map, variable, packageName, zarrVersion, zarrFormat]);
 
   useEffect(() => {
     if (!map || !zarrLayerRef.current) return;

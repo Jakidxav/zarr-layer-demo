@@ -16,9 +16,6 @@ export const Map = () => {
   const zoom = useStore((state) => state.zoom);
 
   const rasterFormat = useStore((state) => state.rasterFormat);
-  const variable = useStore((state) => state.variable);
-  const month = useStore((state) => state.month);
-  const stat = useStore((state) => state.stat);
   const setRaster = useStore((state) => state.setRaster);
 
   const showLandLayer = useStore((state) => state.showLandLayer);
@@ -32,9 +29,7 @@ export const Map = () => {
       <Basemap />
 
       {rasterFormat === 'arrays' && <ArrayRaster id={'raster'} setRaster={setRaster} />}
-
       {rasterFormat === 'bands' && <BandRaster id={'raster'} setRaster={setRaster} />}
-
       {rasterFormat === 'both' && <ArrayAndBandRaster id={'raster'} setRaster={setRaster} />}
 
       {showLakesLayer && (
@@ -94,8 +89,6 @@ export const Map = () => {
       )}
 
       {showCharts && rasterFormat && <PointQuery id={'point-query'} />}
-
-      {/* <Router /> */}
 
       <ZoomReset />
 

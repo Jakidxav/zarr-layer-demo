@@ -27,6 +27,9 @@ function getFormattedTimeseries(plotData, variable, band, stat, rasterFormat) {
   }
 }
 
+// provide min / max bounds to number
+const clamp = (value, min, max) => (value > max ? max : value < min ? min : value);
+
 export default function TimeseriesChart() {
   const containerRef = useRef(null);
   const { theme } = useThemeUI();
@@ -91,7 +94,10 @@ export default function TimeseriesChart() {
 
     // convert data from {month: [value]} to {[month, value]} format,
     // which many d3 methods expect.
-    let timeseriesArray = monthArray.filter((d) => timeseries[d]).map((d) => [d, timeseries[d][0]]);
+    let timeseriesArray = monthArray
+      .filter((d) => timeseries[d])
+      .map((d) => [d, timeseries[d][0]])
+      .map(([d, v]) => [d, clamp(v, varMin, varMax)]);
 
     return (
       <path
@@ -105,7 +111,7 @@ export default function TimeseriesChart() {
         strokeLinejoin="round"
       />
     );
-  }, [hasData, timeseries]);
+  }, [hasData, timeseries, variable]);
 
   return (
     <Box
@@ -203,17 +209,21 @@ export default function TimeseriesChart() {
               />
               <text
                 key={`y-tick-label-${idx}`}
-                x={-15}
+                x={-7}
                 y={yScale(value)}
                 dy={'0.05em'}
-                textAnchor={'middle'}
+                textAnchor={'end'}
                 dominantBaseline={'middle'}
                 fontSize={'0.625rem'}
                 fontFamily={"'Relative Book Pro', Roboto, system-ui, sans-serif"}
                 stroke={'none'}
                 fill={'currentColor'}
               >
-                {value}
+                {value === varMax
+                  ? `\u2265${value}`
+                  : variable !== 'precip' && value === varMin
+                    ? `\u2264${value}`
+                    : value}
               </text>
             </g>
           ))}
@@ -221,9 +231,9 @@ export default function TimeseriesChart() {
           <g id={'y-axis-label'}>
             <text
               key={`y-label`}
-              x={-tickSize - 32}
+              x={-tickSize - 34}
               y={(y0 + y1) / 2}
-              transform={`rotate(-90, ${-tickSize - 32}, ${(y0 + y1) / 2})`}
+              transform={`rotate(-90, ${-tickSize - 34}, ${(y0 + y1) / 2})`}
               textAnchor={'middle'}
               fontSize={'0.75rem'}
               fontFamily={"'Relative Book Pro', Roboto, system-ui, sans-serif"}
@@ -261,7 +271,7 @@ export default function TimeseriesChart() {
               key={`month-value-circle`}
               id={`month-value-circle`}
               cx={xScale(sliderIndex)}
-              cy={yScale(currentMonthlyValue)}
+              cy={yScale(clamp(currentMonthlyValue, varMin, varMax))}
               r={4}
               stroke={'currentColor'}
               fill={'currentColor'}

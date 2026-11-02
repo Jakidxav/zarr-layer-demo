@@ -21,6 +21,10 @@ export default function Settings() {
   const versionIndex = useStore((state) => state.versionIndex);
   const selectVersionByIndex = useStore((s) => s.selectVersionByIndex);
 
+  const zarrFormatArray = useStore((state) => state.zarrFormatArray);
+  const zarrFormatIndex = useStore((state) => state.zarrFormatIndex);
+  const setZarrFormatIndex = useStore((state) => state.setZarrFormatIndex);
+
   const rasterFormatArray = useStore((state) => state.rasterFormatArray);
   const setRasterFormat = useStore((state) => state.setRasterFormat);
   const rasterFormatIndex = useStore((state) => state.rasterFormatIndex);
@@ -71,20 +75,23 @@ export default function Settings() {
       borderStyle: 'solid',
       borderColor: 'primary',
     },
-    'package-name-container': {
+    'package-name-options': {
       gridTemplateColumns: 'repeat(2, 1fr)',
     },
-    'version-container': {
+    'zarr-version-options': {
       // gridTemplateColumns: packageName === 'ndpyramid' ? '1fr' : 'repeat(2, 1fr)',
       gridTemplateColumns: '1fr',
     },
-    'raster-type-container': {
-      gridTemplateColumns: 'repeat(3, 1fr)',
-    },
-    'variable-container': {
+    'zarr-format-options': {
       gridTemplateColumns: 'repeat(2, 1fr)',
     },
-    'stat-container': {
+    'raster-format-options': {
+      gridTemplateColumns: 'repeat(3, 1fr)',
+    },
+    'variable-options': {
+      gridTemplateColumns: 'repeat(2, 1fr)',
+    },
+    'stat-options': {
       gridTemplateColumns: 'repeat(3, 1fr)',
     },
   };
@@ -97,13 +104,18 @@ export default function Settings() {
     [setPackage, packageNameArray]
   );
 
-  const handleVersionChange = useCallback(
+  const handleZarrVersionChange = useCallback(
     (event) => {
       let newIndex = event.currentTarget.getAttribute('data-idx');
       selectVersionByIndex(newIndex);
     },
     [selectVersionByIndex, versionArray]
   );
+
+  const handleZarrFormatChange = useCallback((event) => {
+    let newIndex = event.currentTarget.getAttribute('data-idx');
+    setZarrFormatIndex(newIndex);
+  });
 
   const handleRasterFormatChange = useCallback((event) => {
     let newIndex = event.currentTarget.getAttribute('data-idx');
@@ -127,7 +139,7 @@ export default function Settings() {
     setStat(stat);
   });
 
-  const generateFilterOptions = (array, callback, index, name) => {
+  const generateFilterOptions = (array, callback, index) => {
     let options = array.map((element, idx) => {
       return (
         <Box
@@ -150,36 +162,28 @@ export default function Settings() {
   let packageNameOptions = generateFilterOptions(
     packageNameArray,
     handlePackageNameChange,
-    packageNameIndex,
-    'package-name'
+    packageNameIndex
   );
 
-  const versionOptions = useMemo(
-    () =>
-      generateFilterOptions(
-        versionArray,
-        handleVersionChange,
-        versionIndex,
-        `${packageName}-version-options`
-      ),
-    [versionArray, versionIndex, packageName, handleVersionChange]
+  const zarrVersionOptions = useMemo(
+    () => generateFilterOptions(versionArray, handleZarrVersionChange, versionIndex),
+    [versionArray, versionIndex, packageName, handleZarrVersionChange]
+  );
+
+  let zarrFormatOptions = generateFilterOptions(
+    zarrFormatArray,
+    handleZarrFormatChange,
+    zarrFormatIndex
   );
 
   let rasterFormatOptions = generateFilterOptions(
     rasterFormatArray,
     handleRasterFormatChange,
-    rasterFormatIndex,
-    'raster-type'
+    rasterFormatIndex
   );
 
-  let variableOptions = generateFilterOptions(
-    variableLabels,
-    handleVariableChange,
-    variableIndex,
-    'variable'
-  );
-
-  let statOptions = generateFilterOptions(statArray, handleStatChange, statIndex, 'stat');
+  let variableOptions = generateFilterOptions(variableLabels, handleVariableChange, variableIndex);
+  let statOptions = generateFilterOptions(statArray, handleStatChange, statIndex);
 
   return (
     <>
@@ -191,45 +195,62 @@ export default function Settings() {
 
           <Box
             as="div"
-            id={'raster-type-container'}
-            sx={{ ...sx['options-container'], ...sx['package-name-container'] }}
+            id={'package-name-options'}
+            sx={{ ...sx['options-container'], ...sx['package-name-options'] }}
           >
             {packageNameOptions}
           </Box>
         </Box>
 
-        <Box id="version-container">
-          <Box as="div" sx={sx.title} id="version-title">
+        <Box id="zarr-version-container">
+          <Box as="div" sx={sx.title} id="zarr-version-title">
             Zarr version
             <Info>Use Zarr v2 with consolidated metadata or v3 with unconsolidated metadata.</Info>
           </Box>
 
           <Box
             as="div"
-            id={'version-container'}
-            sx={{ ...sx['options-container'], ...sx['version-container'] }}
+            id={'zarr-version-options'}
+            sx={{ ...sx['options-container'], ...sx['zarr-version-options'] }}
           >
-            {versionOptions}
+            {zarrVersionOptions}
           </Box>
         </Box>
 
-        <Box id="raster-type-container">
-          <Box as="div" sx={sx.title} id="raster-type-title">
+        {packageName === 'topozarr' && (
+          <Box id="zarr-format-container">
+            <Box as="div" sx={sx.title} id="zarr-format-title">
+              Zarr format
+              <Info>Choose between a 'flat' or pyramid Zarr store.</Info>
+            </Box>
+
+            <Box
+              as="div"
+              id={'zarr-format-options'}
+              sx={{ ...sx['options-container'], ...sx['zarr-format-options'] }}
+            >
+              {zarrFormatOptions}
+            </Box>
+          </Box>
+        )}
+
+        <Box id="raster-format-container">
+          <Box as="div" sx={sx.title} id="raster-format-title">
             Raster format{' '}
             <Info>Input data comes with variables as arrays, bands, or a combination of both.</Info>
           </Box>
 
           <Box
             as="div"
-            id={'raster-type-container'}
-            sx={{ ...sx['options-container'], ...sx['raster-type-container'] }}
+            id={'raster-format-options'}
+            sx={{ ...sx['options-container'], ...sx['raster-format-options'] }}
           >
             {rasterFormatOptions}
           </Box>
         </Box>
 
-        <Box id="var-container">
-          <Box as="div" sx={sx.title} id="var-title">
+        <Box id="variable-container">
+          <Box as="div" sx={sx.title} id="variable-title">
             Variable{' '}
             <Info>
               View monthly average historical climate data for temperature and precipitation.
@@ -238,22 +259,22 @@ export default function Settings() {
 
           <Box
             as="div"
-            id={'variable-container'}
-            sx={{ ...sx['options-container'], ...sx['variable-container'] }}
+            id={'variable-options'}
+            sx={{ ...sx['options-container'], ...sx['variable-options'] }}
           >
             {variableOptions}
           </Box>
 
           {variable === 'temp' && (
-            <Box id="stats" sx={{ mb: isWide ? 0 : 2 }}>
+            <Box id="stats-container" sx={{ mb: isWide ? 0 : 2 }}>
               <Box as="div" sx={sx.title} id="stat-title">
                 Band <Info>Select a band to view minimum, mean, or maximum temperature.</Info>
               </Box>
 
               <Box
                 as="div"
-                id={'stat-container'}
-                sx={{ ...sx['options-container'], ...sx['stat-container'] }}
+                id={'stat-options'}
+                sx={{ ...sx['options-container'], ...sx['stat-options'] }}
               >
                 {statOptions}
               </Box>

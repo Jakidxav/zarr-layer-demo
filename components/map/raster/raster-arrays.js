@@ -25,12 +25,15 @@ const ArrayRaster = ({ id, setRaster }) => {
 
   const packageName = useStore((state) => state.packageName);
   const zarrVersion = useStore((state) => state.versionArray[state.versionIndex]);
+  const zarrFormat = useStore((state) => state.zarrFormat);
   const rasterFormat = useStore((state) => state.rasterFormat);
   const month = useStore((state) => state.month);
-  const source = `https://storage.googleapis.com/zarr-layer-demo/zarr/${packageName}-v${zarrVersion}-${rasterFormat}.zarr`;
+  const source = `https://storage.googleapis.com/zarr-layer-demo/zarr/${packageName}-v${zarrVersion}-${rasterFormat}${
+    packageName === 'ndpyramid' || zarrFormat === 'flat' ? '' : '-pyramid'
+  }.zarr`;
 
   // possible values: ['tmin', 'tavg', 'tmax', 'precip]
-  const arrayName = useStore((state) => state.arrayName)();
+  const arrayName = useStore((state) => state.arrayName());
 
   useEffect(() => {
     if (!map) return;
@@ -61,7 +64,7 @@ const ArrayRaster = ({ id, setRaster }) => {
       let layerId = id;
       if (map.getLayer(layerId)) map.removeLayer(layerId);
     };
-  }, [map, arrayName, packageName, zarrVersion]);
+  }, [map, arrayName, packageName, zarrVersion, zarrFormat]);
 
   useEffect(() => {
     if (!map || !zarrLayerRef.current) return;

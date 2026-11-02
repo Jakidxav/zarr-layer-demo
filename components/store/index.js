@@ -10,10 +10,13 @@ export const useStore = create((set, get) => {
     topozarr: [3],
   };
 
+  const ZARR_FORMAT_ARRAY = ['flat', 'pyramid'];
+  const RASTER_FORMAT_ARRAY = ['arrays', 'bands', 'both'];
+
   return {
     // map container state
-    initialZoom: 0,
-    zoom: 0,
+    initialZoom: 1,
+    zoom: 1,
     setZoom: (zoom) => set({ zoom }),
 
     minZoom: 1,
@@ -42,10 +45,25 @@ export const useStore = create((set, get) => {
     versionIndex: 0,
     selectVersionByIndex: (index) => set({ versionIndex: Number(index) }),
 
-    rasterFormatArray: ['arrays', 'bands', 'both'],
-    rasterFormat: 'both',
-    setRasterFormat: (rasterFormat) => set({ rasterFormat }),
+    // only applies to `topozarr` stores, `ndpyramid` output is always a pyramid
+    zarrFormatArray: ZARR_FORMAT_ARRAY,
+    zarrFormatIndex: 0,
+    zarrFormat: ZARR_FORMAT_ARRAY[0],
+    setZarrFormatIndex: (zarrFormatIndex) =>
+      set({
+        zarrFormatIndex,
+        zarrFormat: ZARR_FORMAT_ARRAY[zarrFormatIndex],
+      }),
+    setZarrFormat: (zarrFormat) =>
+      set({
+        zarrFormat,
+        zarrFormatIndex: ZARR_FORMAT_ARRAY.indexOf(zarrFormat),
+      }),
+
+    rasterFormatArray: RASTER_FORMAT_ARRAY,
+    rasterFormat: RASTER_FORMAT_ARRAY[0],
     rasterFormatIndex: 0,
+    setRasterFormat: (rasterFormat) => set({ rasterFormat }),
     setRasterFormatIndex: (rasterFormatIndex) => set({ rasterFormatIndex }),
 
     variableArray: ['temp', 'precip'],
