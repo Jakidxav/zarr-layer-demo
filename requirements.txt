@@ -11,7 +11,7 @@ pandas
 pre-commit
 rasterio
 tqdm
-topozarr
+topozarr>=0.2.0
 virtualizarr
 xarray
 xproj

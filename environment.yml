@@ -23,4 +23,4 @@ dependencies:
 - xproj
 - zarr
 - pip:
-  - topozarr
+  - topozarr>=0.2.0

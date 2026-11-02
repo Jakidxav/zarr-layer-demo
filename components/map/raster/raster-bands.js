@@ -23,7 +23,7 @@ const BandRaster = ({ id, setRaster }) => {
 
   const packageName = useStore((state) => state.packageName);
   const zarrVersion = useStore((state) => state.versionArray[state.versionIndex]);
-  const zarrFormat = useStore((state) => state.versionArray[state.versionIndex]);
+  const zarrFormat = useStore((state) => state.zarrFormat);
   const rasterFormat = useStore((state) => state.rasterFormat);
   const band = useStore((state) => state.band());
   const month = useStore((state) => state.month);
