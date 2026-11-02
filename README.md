@@ -29,6 +29,8 @@ To install the `JavaScript` packages needed to run the web map, you can run:
 npm install
 ```
 
+If you've pulled changes that update `package-lock.json`, re-sync with `npm ci` so `node_modules` matches the lockfile. A stale `@carbonplan/zarr-layer` (e.g. 0.4.x instead of 0.11) shows up as `IndexError: index out of bounds for dimension with length 12` when changing months or zooming out.
+
 ## Viewing the data
 
 The data is displayed on a `React`, `Next JS` app deployed on `GitHub` using the [`zarr-layer`](https://github.com/carbonplan/zarr-layer/tree/main) package. You can run the web app from the main directory with:
