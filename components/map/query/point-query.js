@@ -21,12 +21,13 @@ export default function PointQuery({ id }) {
   const layerIdRef = useRef();
 
   const packageName = useStore((state) => state.packageName);
+  const zarrFormat = useStore((state) => state.zarrFormat);
   const rasterFormat = useStore((state) => state.rasterFormat);
   const variable = useStore((state) => state.variable);
   const stat = useStore((state) => state.stat);
   const statArray = useStore((state) => state.statArray);
-  const band = useStore((state) => state.band)();
-  const arrayName = useStore((state) => state.arrayName)();
+  const band = useStore((state) => state.band());
+  const arrayName = useStore((state) => state.arrayName());
   const monthArray = useStore((state) => state.monthArray);
   const raster = useStore((state) => state.raster);
 
@@ -207,7 +208,11 @@ export default function PointQuery({ id }) {
       // dimensions: Array(3) [ "month", "lat", "lon" ]
       // tavg: Object { 1: (1) […], 2: (1) […], 3: (1) […], … }
       selector = {
-        month: monthArray,
+        // month: monthArray,
+        month:
+          packageName === 'topozarr' && zarrFormat === 'pyramid'
+            ? monthArray.map((m) => m - 1)
+            : monthArray,
       };
     } else if (rasterFormat === 'bands') {
       selector = {
@@ -216,7 +221,11 @@ export default function PointQuery({ id }) {
         // coordinates: Object { lat: (1) […], lon: (1) […], band: (4) […], … }
         // dimensions: Array(4) [ "band", "month", "lat", … ]
         // variable: Object { tmin: {…}, tavg: {…}, tmax: {…}, … }
-        month: monthArray,
+        // month: monthArray,
+        month:
+          packageName === 'topozarr' && zarrFormat === 'pyramid'
+            ? monthArray.map((m) => m - 1)
+            : monthArray,
         band: variable === 'temp' ? ['tmin', 'tavg', 'tmax'] : 'precip',
       };
     } else {
@@ -227,7 +236,11 @@ export default function PointQuery({ id }) {
       // dimensions: Array(4) [ "band", "month", "lat", … ]
       // temp: Object { min: {…}, mean: {…}, max: {…} }
       selector = {
-        month: monthArray,
+        // month: monthArray,
+        month:
+          packageName === 'topozarr' && zarrFormat === 'pyramid'
+            ? monthArray.map((m) => m - 1)
+            : monthArray,
         band: statArray, // ['min', 'mean', 'max']
       };
     }
@@ -252,7 +265,7 @@ export default function PointQuery({ id }) {
     return () => {
       abortController.abort();
     };
-  }, [raster, coords, variable, arrayName, band, stat, rasterFormat, packageName]);
+  }, [raster, coords, variable, arrayName, band, stat, packageName, zarrFormat, rasterFormat]);
 
   return (
     <Box

@@ -8,23 +8,37 @@ import * as d3 from 'd3';
 
 import { useStore } from '../store/index';
 
+// for the topozarr pyramid data, the monthly
+// data comes back 0-indexed instead of 1-indexed
+// like the ndpyramid data and flat topozarr data does
+function standardizeMonthLabels(timeseries) {
+  if (!timeseries) return timeseries;
+  const out = {};
+  Object.values(timeseries).forEach((v, i) => {
+    out[i + 1] = v;
+  });
+  return out;
+}
+
 // Returns the object that maps month --> [value],
 // or undefined depending on the incoming raster format.
 function getFormattedTimeseries(plotData, variable, band, stat, rasterFormat) {
+  let timeseries;
   switch (rasterFormat) {
     case 'arrays':
-      return plotData?.[band];
+      timeseries = plotData?.[band];
+      break;
     case 'bands':
-      if (variable === 'precip') {
-        return plotData?.['variable'];
-      } else {
-        return plotData?.['variable']?.[band];
-      }
+      timeseries = variable === 'precip' ? plotData?.['variable'] : plotData?.['variable']?.[band];
+      break;
     case 'both':
-      return plotData?.[variable]?.[stat];
+      timeseries = plotData?.[variable]?.[stat];
+      break;
     default:
       return undefined;
   }
+
+  return timeseries ? standardizeMonthLabels(timeseries) : timeseries;
 }
 
 // provide min / max bounds to number
@@ -34,9 +48,10 @@ export default function TimeseriesChart() {
   const containerRef = useRef(null);
   const { theme } = useThemeUI();
 
+  const zarrFormat = useStore((state) => state.zarrFormat);
   const rasterFormat = useStore((state) => state.rasterFormat);
   const variable = useStore((state) => state.variable);
-  const band = useStore((state) => state.band)();
+  const band = useStore((state) => state.band());
   const stat = useStore((state) => state.stat);
   const monthArray = useStore((state) => state.monthArray);
   const sliderIndex = useStore((state) => state.sliderIndex);
@@ -75,8 +90,9 @@ export default function TimeseriesChart() {
 
   const timeseries = useMemo(
     () => getFormattedTimeseries(plotData, variable, band, stat, rasterFormat),
-    [plotData, variable, band, stat, rasterFormat]
+    [plotData, variable, band, stat, rasterFormat, zarrFormat]
   );
+
   const hasData = Boolean(timeseries);
 
   const currentMonthlyValue = timeseries?.[sliderIndex]?.[0] ?? null;

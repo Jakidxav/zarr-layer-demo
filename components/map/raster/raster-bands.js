@@ -23,7 +23,7 @@ const BandRaster = ({ id, setRaster }) => {
 
   const packageName = useStore((state) => state.packageName);
   const zarrVersion = useStore((state) => state.versionArray[state.versionIndex]);
-  const zarrFormat = useStore((state) => state.versionArray[state.versionIndex]);
+  const zarrFormat = useStore((state) => state.zarrFormat);
   const rasterFormat = useStore((state) => state.rasterFormat);
   const band = useStore((state) => state.band());
   const month = useStore((state) => state.month);
@@ -49,7 +49,7 @@ const BandRaster = ({ id, setRaster }) => {
       variable: 'variable',
       clim: clim,
       colormap: colormap,
-      selector: { band: band, month: month },
+      selector: { band: band, month: { selected: month - 1, type: 'index' } },
     });
 
     map.addLayer(zarrLayer);
@@ -66,7 +66,7 @@ const BandRaster = ({ id, setRaster }) => {
     if (!map || !zarrLayerRef.current) return;
     let layer = zarrLayerRef.current;
 
-    layer.setSelector({ band: band, month: month });
+    layer.setSelector({ band: band, month: { selected: month - 1, type: 'index' } });
   }, [map, band, month]);
 
   useEffect(() => {

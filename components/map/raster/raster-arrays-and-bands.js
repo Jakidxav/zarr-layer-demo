@@ -51,7 +51,7 @@ const ArrayAndBandRaster = ({ id, setRaster }) => {
       variable: variable,
       clim: clim,
       colormap: colormap,
-      selector: { band: stat, month: month },
+      selector: { band: stat, month: { selected: month - 1, type: 'index' } },
     });
 
     map.addLayer(zarrLayer);
@@ -68,7 +68,7 @@ const ArrayAndBandRaster = ({ id, setRaster }) => {
     if (!map || !zarrLayerRef.current) return;
     let layer = zarrLayerRef.current;
 
-    layer.setSelector({ band: stat, month: month });
+    layer.setSelector({ band: stat, month: { selected: month - 1, type: 'index' } });
   }, [map, variable, month, stat]);
 
   useEffect(() => {

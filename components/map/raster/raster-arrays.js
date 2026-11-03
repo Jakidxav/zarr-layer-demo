@@ -53,7 +53,7 @@ const ArrayRaster = ({ id, setRaster }) => {
       variable: arrayName,
       clim: clim,
       colormap: colormap,
-      selector: { month: month },
+      selector: { month: { selected: month - 1, type: 'index' } },
     });
 
     map.addLayer(zarrLayer);
@@ -70,7 +70,7 @@ const ArrayRaster = ({ id, setRaster }) => {
     if (!map || !zarrLayerRef.current) return;
     let layer = zarrLayerRef.current;
 
-    layer.setSelector({ month: month });
+    layer.setSelector({ month: { selected: month - 1, type: 'index' } });
   }, [map, arrayName, month]);
 
   useEffect(() => {

@@ -11,7 +11,6 @@ export default function TimeSlider() {
   const monthArray = useStore((state) => state.monthArray);
   const minMonth = monthArray.at(0);
   const maxMonth = monthArray.at(-1);
-  const month = useStore((state) => state.month);
   const setMonth = useStore((state) => state.setMonth);
   const sliding = useStore((state) => state.sliding);
   const setSliding = useStore((state) => state.setSliding);
